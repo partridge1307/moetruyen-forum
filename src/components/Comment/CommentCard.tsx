@@ -1,94 +1,93 @@
 import UserAvatar from '@/components/User/UserAvatar';
 import Username from '@/components/User/Username';
+import { buttonVariants } from '@/components/ui/Button';
 import { formatTimeToNow } from '@/lib/utils';
+import { MessageSquare } from 'lucide-react';
+import type { Session } from 'next-auth';
 import dynamic from 'next/dynamic';
-import { memo } from 'react';
-import type { ExtendedComment } from '.';
+import { FC, useRef } from 'react';
+import { ExtendedComment } from '.';
+import CommentVoteSkeleton from '../Skeleton/CommentVoteSkeleton';
 import CommentContent from './components/CommentContent';
 import CommentOEmbed from './components/CommentOEmbed';
-import SubComment from './components/SubComment';
-import CommentFuncSkeleton from '../Skeleton/CommentFuncSkeleton';
+import SubCommentWrapper from './components/SubCommentWrapper';
 
-const CommentFunc = dynamic(() => import('./components/CommentFunc'), {
+const CommentVote = dynamic(() => import('./components/CommentVote'), {
   ssr: false,
-  loading: () => <CommentFuncSkeleton />,
+  loading: () => <CommentVoteSkeleton />,
 });
-const SubCommentCard = dynamic(() => import('./SubCommentCard'), {
-  ssr: false,
-});
+const SubComment = dynamic(() => import('./SubComment'), { ssr: false });
 
 interface CommentCardProps {
   comment: ExtendedComment;
-  userId?: string;
-  callbackURL: string;
+  session: Session | null;
+  isManager: boolean;
+  children: React.ReactNode;
 }
 
-const CommentCard = ({ comment, userId, callbackURL }: CommentCardProps) => {
-  const voteAmt = comment.votes.reduce((acc, vote) => {
-    if (vote.type === 'UP_VOTE') return acc + 1;
-    if (vote.type === 'DOWN_VOTE') return acc - 1;
-    return acc;
-  }, 0);
-
-  const currentVote = comment.votes.find(
-    (vote) => vote.userId === userId
-  )?.type;
+const CommentCard: FC<CommentCardProps> = ({
+  comment,
+  session,
+  isManager,
+  children,
+}) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   return (
     <>
-      <UserAvatar user={comment.creator} className="mt-2 w-12 h-12" />
+      <UserAvatar user={comment.creator} />
 
-      <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <Username user={comment.creator} />
-          <p className="text-sm">
-            {formatTimeToNow(new Date(comment.createdAt))}
-          </p>
-        </div>
+      <div className="min-w-0 space-y-1">
+        <dl className="flex flex-wrap items-center gap-2">
+          <dt>
+            <Username user={comment.creator} className="text-start" />
+          </dt>
+          <dd className="text-sm">
+            <time dateTime={new Date(comment.createdAt).toDateString()}>
+              {formatTimeToNow(new Date(comment.createdAt))}
+            </time>
+          </dd>
+        </dl>
 
         <div className="space-y-2">
           <CommentContent id={comment.id} content={comment.content} />
 
-          {!!comment.oEmbed && (
-            <CommentOEmbed
-              oEmbed={
-                comment.oEmbed as {
-                  link: string;
-                  meta: {
-                    title?: string;
-                    description?: string;
-                    image: {
-                      url?: string;
-                    };
-                  };
-                }
-              }
-            />
+          {!!comment.oEmbed && <CommentOEmbed oEmbed={comment.oEmbed} />}
+
+          {!!session && (
+            <div className="flex items-center gap-4">
+              <CommentVote
+                commentId={comment.id}
+                votes={comment.votes}
+                sessionUserId={session.user.id}
+              />
+
+              <button
+                aria-label="comment button"
+                className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                onClick={() => buttonRef.current?.click()}
+              >
+                <MessageSquare className="w-5 h-5" />
+              </button>
+
+              {children}
+            </div>
           )}
 
-          {!!userId && (
-            <CommentFunc
+          <SubCommentWrapper
+            ref={buttonRef}
+            subCommentLength={comment._count.replies}
+          >
+            <SubComment
               commentId={comment.id}
-              isAuthor={comment.creatorId === userId}
-              voteAmt={voteAmt}
-              currentVote={currentVote}
-              callbackURL={callbackURL}
+              session={session}
+              isManager={isManager}
             />
-          )}
+          </SubCommentWrapper>
         </div>
-
-        {comment._count.replies !== 0 && (
-          <SubComment subCommentLength={comment._count.replies}>
-            <SubCommentCard
-              commentId={comment.id}
-              userId={userId}
-              callbackURL={callbackURL}
-            />
-          </SubComment>
-        )}
       </div>
     </>
   );
 };
 
-export default memo(CommentCard);
+export default CommentCard;

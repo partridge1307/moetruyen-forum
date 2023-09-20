@@ -2,8 +2,61 @@ import PostFeed from '@/components/Feed/PostFeed';
 import { INFINITE_SCROLL_PAGINATION_RESULTS } from '@/config';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
+  const subForum = await db.subForum.findUnique({
+    where: {
+      slug: params.slug,
+    },
+    select: {
+      title: true,
+      banner: true,
+    },
+  });
+
+  if (!subForum)
+    return {
+      title: 'Moetruyen Forum',
+      description: 'Moetruyen Forum',
+    };
+
+  return {
+    title: {
+      default: subForum.title,
+      absolute: subForum.title,
+    },
+    description: `Cộng đồng ${subForum.title} | Moetruyen`,
+    keywords: ['Forum', 'Diễn đàn', `${subForum.title}`, 'Moetruyen'],
+    alternates: {
+      canonical: `${process.env.NEXTAUTH_URL}/${params.slug}`,
+    },
+    openGraph: {
+      ...(subForum.banner && {
+        images: [{ url: subForum.banner, alt: `${subForum.title} Banner` }],
+      }),
+      url: `${process.env.NEXTAUTH_URL}/${params.slug}`,
+      siteName: 'Moetruyen Forum',
+      title: subForum.title,
+      description: `Cộng đồng ${subForum.title} | Moetruyen`,
+    },
+    twitter: {
+      ...(subForum.banner && {
+        images: [{ url: subForum.banner, alt: `${subForum.title} Banner` }],
+        card: 'summary_large_image',
+      }),
+      site: 'Moetruyen Forum',
+      title: subForum.title,
+      description: `Cộng đồng ${subForum.title} | Moetruyen`,
+    },
+  };
+}
 
 const MiniCreatePost = dynamic(() => import('@/components/MiniCreatePost'), {
   ssr: false,
@@ -77,8 +130,10 @@ const page = async ({ params }: { params: { slug: string } }) => {
     <>
       {!!(
         (subForum.canSend && subscription) ||
-        subForum.creatorId === session?.user.id
+        subForum.creatorId === session?.user.id ||
+        subscription?.isManager
       ) && <MiniCreatePost session={session} />}
+
       <div className="space-y-2">
         <h1 className="text-xl font-semibold">Bài viết</h1>
         <PostFeed

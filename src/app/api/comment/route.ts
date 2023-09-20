@@ -13,6 +13,7 @@ export async function POST(req: Request) {
       await req.json()
     );
 
+    let createdComment;
     if (type === 'SUB_COMMENT') {
       const targetComment = await db.postComment.findUniqueOrThrow({
         where: {
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
       });
 
       if (targetComment.creatorId !== session.user.id) {
-        await db.$transaction([
+        [createdComment] = await db.$transaction([
           db.postComment.create({
             data: {
               postId: targetComment.postId,
@@ -54,7 +55,7 @@ export async function POST(req: Request) {
           }),
         ]);
       } else {
-        await db.postComment.create({
+        createdComment = await db.postComment.create({
           data: {
             postId: targetComment.postId,
             replyToId: targetComment.id,
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
         });
       }
     } else {
-      await db.postComment.create({
+      createdComment = await db.postComment.create({
         data: {
           postId: id,
           creatorId: session.user.id,
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
       });
     }
 
-    return new Response('OK');
+    return new Response(JSON.stringify(createdComment.id));
   } catch (error) {
     if (error instanceof ZodError) {
       return new Response('Invalid', { status: 422 });

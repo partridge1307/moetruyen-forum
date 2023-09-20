@@ -4,12 +4,20 @@ import axios from 'axios';
 
 export const useComments = <TData>(id: number, APIQuery: string) =>
   useInfiniteQuery(
-    ['comment-infinite-query', id],
-    async ({ pageParam = 1 }) => {
-      const query = `${APIQuery}/${id}?limit=${INFINITE_SCROLL_PAGINATION_RESULTS}&page=${pageParam}`;
+    ['infinite-comments-query', id],
+    async ({ pageParam }) => {
+      let query = `${APIQuery}?limit=${INFINITE_SCROLL_PAGINATION_RESULTS}`;
+
+      if (pageParam) {
+        query = `${query}&cursor=${pageParam}`;
+      }
 
       const { data } = await axios.get(query);
-      return data as { comments: TData[]; lastCursor: number };
+
+      return data as {
+        comments: TData[];
+        lastCursor: number | undefined;
+      };
     },
     {
       getNextPageParam: (lastPage) => {

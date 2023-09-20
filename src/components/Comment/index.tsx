@@ -1,22 +1,24 @@
 'use client';
 
 import { useComments } from '@/hooks/use-comment';
-import { useIntersection } from '@mantine/hooks';
+import { useIntersection, usePrevious } from '@mantine/hooks';
 import type { PostComment, PostVote, User } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
-import { useSession } from 'next-auth/react';
+import type { Session } from 'next-auth';
 import dynamic from 'next/dynamic';
-import { useEffect, useRef } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import CommentCard from './CommentCard';
+import CommentInput from './components/CommentInput';
 
-const CommentInput = dynamic(() => import('./components/CommentInput'), {
+const DeleteComment = dynamic(() => import('./components/DeleteComment'), {
   ssr: false,
-  loading: () => (
-    <div className="h-48 rounded-md animate-pulse dark:bg-zinc-900" />
-  ),
 });
 
-const CALLBACK_URL = '/api/comment/forum';
+interface indexProps {
+  id: number;
+  session: Session | null;
+  isManager: boolean;
+}
 
 export type ExtendedComment = Pick<
   PostComment,
@@ -29,26 +31,21 @@ export type ExtendedComment = Pick<
   };
 };
 
-interface ComemntProps {
-  postId: number;
-}
-
-const Comemnts = ({ postId }: ComemntProps) => {
-  const { data: session } = useSession();
-
-  const lastCmtRef = useRef<HTMLElement>(null);
+const Comments: FC<indexProps> = ({ id, session, isManager }) => {
+  const lastCommentRef = useRef(null);
   const { ref, entry } = useIntersection({
     threshold: 1,
-    root: lastCmtRef.current,
+    root: lastCommentRef.current,
   });
+  const [comments, setComments] = useState<ExtendedComment[]>([]);
+  const prevComments = usePrevious(comments);
 
   const {
-    data: CommentData,
-    fetchNextPage,
+    data: commentsData,
     hasNextPage,
     isFetchingNextPage,
-    refetch,
-  } = useComments<ExtendedComment>(postId, CALLBACK_URL);
+    fetchNextPage,
+  } = useComments<ExtendedComment>(id, `/api/comment/${id}`);
 
   useEffect(() => {
     if (entry?.isIntersecting && hasNextPage) {
@@ -56,58 +53,77 @@ const Comemnts = ({ postId }: ComemntProps) => {
     }
   }, [entry?.isIntersecting, fetchNextPage, hasNextPage]);
 
-  const comments = CommentData?.pages.flatMap((page) => page.comments);
+  useEffect(() => {
+    setComments(commentsData?.pages.flatMap((page) => page.comments) ?? []);
+  }, [commentsData?.pages]);
 
   return (
     <>
-      <CommentInput
-        isLoggedIn={!!session}
-        id={postId}
-        type="COMMENT"
-        callbackURL={CALLBACK_URL}
-        refetch={refetch}
-      />
+      {!!session ? (
+        <CommentInput
+          type="COMMENT"
+          session={session}
+          postId={id}
+          setComments={setComments}
+          prevComment={prevComments}
+        />
+      ) : (
+        <p>
+          Vui lòng <span className="font-semibold">đăng nhập</span> hoặc{' '}
+          <span className="font-semibold">đăng ký</span> để bình luận
+        </p>
+      )}
 
-      <ul className="space-y-10">
-        {!!comments?.length ? (
-          comments.map((comment, idx) => {
-            if (idx === comments.length - 1) {
-              return (
-                <li key={comment.id} ref={ref} className="flex gap-3 md:gap-6">
-                  <CommentCard
-                    comment={comment}
-                    userId={session?.user.id}
-                    callbackURL={CALLBACK_URL}
-                  />
-                </li>
-              );
-            } else {
-              return (
-                <li key={comment.id} className="flex gap-3 md:gap-6">
-                  <CommentCard
-                    comment={comment}
-                    userId={session?.user.id}
-                    callbackURL={CALLBACK_URL}
-                  />
-                </li>
-              );
-            }
-          })
-        ) : (
-          <li className="text-center">
-            Hãy làm người đầu tiên <span className="font-bold">comment</span>{' '}
-            nào
-          </li>
-        )}
-
-        {isFetchingNextPage && (
-          <li className="flex justify-center">
-            <Loader2 className="w-6 h-6 animate-spin" />
-          </li>
-        )}
+      <ul className="space-y-12">
+        {comments.map((comment, idx) => {
+          if (idx === comments.length - 1)
+            return (
+              <li key={comment.id} ref={ref} className="flex gap-4">
+                <CommentCard
+                  comment={comment}
+                  session={session}
+                  isManager={isManager}
+                >
+                  {(comment.creatorId === session?.user.id || isManager) && (
+                    <DeleteComment
+                      type="COMMENT"
+                      commentId={comment.id}
+                      APIQuery={`/api/comment/${comment.id}`}
+                      setComments={setComments}
+                    />
+                  )}
+                </CommentCard>
+              </li>
+            );
+          else
+            return (
+              <li key={comment.id} className="flex gap-4">
+                <CommentCard
+                  comment={comment}
+                  session={session}
+                  isManager={isManager}
+                >
+                  {(comment.creatorId === session?.user.id || isManager) && (
+                    <DeleteComment
+                      type="COMMENT"
+                      commentId={comment.id}
+                      APIQuery={`/api/comment/${comment.id}`}
+                      setComments={setComments}
+                    />
+                  )}
+                </CommentCard>
+              </li>
+            );
+        })}
       </ul>
+
+      {isFetchingNextPage && (
+        <p className="flex justify-center">
+          <Loader2 className="w-10 h-10 animate-spin" />
+        </p>
+      )}
     </>
   );
 };
 
-export default Comemnts;
+export default Comments;

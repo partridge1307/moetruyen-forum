@@ -9,6 +9,7 @@ import {
   type InitialConfigType,
 } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
+import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
@@ -17,6 +18,7 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import type { Prisma } from '@prisma/client';
 import type { EditorState, LexicalEditor } from 'lexical';
+import { type MutableRefObject } from 'react';
 import { nodes } from './Node';
 import { theme } from './Theme';
 import AutoEmbedPlugin from './plugins/AutoEmbed';
@@ -24,11 +26,9 @@ import AutoLink from './plugins/AutoLink';
 import ImagesPlugin from './plugins/Image';
 import MaxLengthPlugin from './plugins/MaxLength';
 import MentionsPlugin from './plugins/Mention';
-import SteamPlugin from './plugins/Steam';
+import TiktokPlugin from './plugins/Tiktok';
 import Toolbar from './plugins/Toolbar';
 import YouTubePlugin from './plugins/Youtube';
-import { EditorRefPlugin } from '@lexical/react/LexicalEditorRefPlugin';
-import type { MutableRefObject } from 'react';
 
 function onError(error: Error): void {
   // eslint-disable-next-line no-console
@@ -94,12 +94,12 @@ const Editor = ({
       <MaxLengthPlugin maxLength={maxLength} />
       <MentionsPlugin />
       <ImagesPlugin />
-      <SteamPlugin />
+      <TiktokPlugin />
       <YouTubePlugin />
       <OnChangePlugin
         onChange={(editorState) => !!onChange && onChange(editorState)}
       />
-      {editorRef ? <EditorRefPlugin editorRef={editorRef} /> : ''}
+      {!!editorRef ? <EditorRefPlugin editorRef={editorRef} /> : ''}
     </LexicalComposer>
   );
 };

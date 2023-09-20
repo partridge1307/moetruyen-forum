@@ -3,7 +3,7 @@ import { DeleteSubForumImage, UploadForumImage } from '@/lib/contabo';
 import { db } from '@/lib/db';
 import {
   CreatePostValidator,
-  CreateThreadFormValidator,
+  EditThreadFormValidator,
 } from '@/lib/validators/forum';
 import { Prisma } from '@prisma/client';
 import { ZodError, z } from 'zod';
@@ -209,9 +209,8 @@ export async function PUT(req: Request, context: { params: { id: string } }) {
     const session = await getAuthSession();
     if (!session) return new Response('Unauthorized', { status: 401 });
 
-    const { thumbnail, title, slug, canSend } = CreateThreadFormValidator.parse(
-      await req.formData()
-    );
+    const { thumbnail, title, slug, canSend, managers } =
+      EditThreadFormValidator.parse(await req.formData());
 
     const targetSubForum = await db.subForum.findUniqueOrThrow({
       where: {
@@ -222,8 +221,45 @@ export async function PUT(req: Request, context: { params: { id: string } }) {
         id: true,
         slug: true,
         banner: true,
+        subscriptions: {
+          where: {
+            isManager: true,
+          },
+          select: {
+            userId: true,
+          },
+        },
       },
     });
+
+    if (
+      slug &&
+      (await db.subForum.findUnique({
+        where: {
+          slug,
+          NOT: {
+            id: targetSubForum.id,
+          },
+        },
+      }))
+    )
+      return new Response('Existed slug', { status: 400 });
+
+    if (
+      managers.length &&
+      !(
+        await db.subscription.findMany({
+          where: {
+            subForumId: targetSubForum.id,
+            userId: { in: managers.map((manager) => manager.id) },
+            user: {
+              verified: true,
+            },
+          },
+        })
+      ).length
+    )
+      return new Response('Invalid managers', { status: 406 });
 
     let uploadedImage: string | null = null;
 
@@ -239,22 +275,55 @@ export async function PUT(req: Request, context: { params: { id: string } }) {
       await DeleteSubForumImage(targetSubForum.id);
     }
 
-    if (slug && (await db.subForum.findUnique({ where: { slug } })))
-      return new Response('Existed slug', { status: 400 });
-
     const subForumSlug = slug?.trim() ?? targetSubForum.slug;
+    const removedManager = targetSubForum.subscriptions.filter(
+      (user) => !managers.some((usr) => usr.id === user.userId)
+    );
 
-    await db.subForum.update({
-      where: {
-        id: targetSubForum.id,
-      },
-      data: {
-        title,
-        slug: subForumSlug,
-        canSend: canSend === 'true' ? true : false,
-        banner: uploadedImage,
-      },
-    });
+    if (managers.length) {
+      await db.$transaction([
+        db.subForum.update({
+          where: {
+            id: targetSubForum.id,
+          },
+          data: {
+            title,
+            slug: subForumSlug,
+            canSend: canSend === 'true' ? true : false,
+            banner: uploadedImage,
+          },
+        }),
+        db.subscription.updateMany({
+          where: {
+            userId: { in: managers.map((manager) => manager.id) },
+          },
+          data: {
+            isManager: true,
+          },
+        }),
+      ]);
+    } else
+      await db.subForum.update({
+        where: {
+          id: targetSubForum.id,
+        },
+        data: {
+          title,
+          slug: subForumSlug,
+          canSend: canSend === 'true' ? true : false,
+          banner: uploadedImage,
+        },
+      });
+
+    !!removedManager.length &&
+      (await db.subscription.updateMany({
+        where: {
+          userId: { in: removedManager.map((user) => user.userId) },
+        },
+        data: {
+          isManager: false,
+        },
+      }));
 
     return new Response(JSON.stringify(subForumSlug));
   } catch (error) {
@@ -265,6 +334,52 @@ export async function PUT(req: Request, context: { params: { id: string } }) {
       if (error.code === 'P2025')
         return new Response('Not found', { status: 404 });
     }
+    return new Response('Something went wrong', { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  context: { params: { id: string } }
+) {
+  try {
+    const session = await getAuthSession();
+    if (!session) return new Response('Unauthorized', { status: 401 });
+
+    await db.$transaction([
+      db.post.findUniqueOrThrow({
+        where: {
+          id: +context.params.id,
+          OR: [
+            {
+              authorId: session.user.id,
+            },
+            {
+              subForum: {
+                subscriptions: {
+                  some: {
+                    userId: session.user.id,
+                    isManager: true,
+                  },
+                },
+              },
+            },
+          ],
+        },
+      }),
+      db.post.delete({
+        where: {
+          id: +context.params.id,
+        },
+      }),
+    ]);
+
+    return new Response('OK');
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return new Response('Not found', { status: 404 });
+    }
+
     return new Response('Something went wrong', { status: 500 });
   }
 }

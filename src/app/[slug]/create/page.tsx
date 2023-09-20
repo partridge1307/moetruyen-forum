@@ -1,11 +1,67 @@
+import PostCreateSkeleton from '@/components/Skeleton/PostCreateSkeleton';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import dynamic from 'next/dynamic';
 import { notFound, redirect } from 'next/navigation';
 import { FC } from 'react';
-import dynamic from 'next/dynamic';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({
+  params,
+}: pageProps): Promise<Metadata> {
+  const subForum = await db.subForum.findUnique({
+    where: {
+      slug: params.slug,
+    },
+    select: {
+      title: true,
+      banner: true,
+    },
+  });
+
+  if (!subForum)
+    return {
+      title: 'Đăng bài',
+      description: 'Đăng bài | Moetruyen',
+    };
+
+  return {
+    title: 'Đăng bài',
+    description: `Đăng bài tại cộng đồng ${subForum.title} | Moetruyen`,
+    alternates: {
+      canonical: `${process.env.NEXTAUTH_URL}/${params.slug}`,
+    },
+    keywords: [
+      'Create Post',
+      'Đăng bài',
+      'Forum',
+      'Diễn đàn',
+      `${subForum.title}`,
+    ],
+    openGraph: {
+      ...(subForum.banner && {
+        images: [{ url: subForum.banner, alt: `${subForum.title} Banner` }],
+      }),
+      url: `${process.env.NEXTAUTH_URL}/${params.slug}`,
+      siteName: 'Moetruyen Forum',
+      title: 'Đăng bài',
+      description: `Đăng bài tại cộng đồng ${subForum.title} | Moetruyen`,
+    },
+    twitter: {
+      ...(subForum.banner && {
+        images: [{ url: subForum.banner, alt: `${subForum.title} Banner` }],
+        card: 'summary_large_image',
+      }),
+      site: 'Moetruyen Forum',
+      title: 'Đăng bài',
+      description: `Đăng bài tại cộng đồng ${subForum.title} | Moetruyen`,
+    },
+  };
+}
 
 const CreatePostForm = dynamic(() => import('@/components/Create/Post'), {
   ssr: false,
+  loading: () => <PostCreateSkeleton />,
 });
 
 interface pageProps {
@@ -42,9 +98,9 @@ const page: FC<pageProps> = async ({ params }) => {
   if (!subForum) return notFound();
 
   return (
-    <main className="p-3 rounded-md dark:bg-zinc-900/60">
+    <div className="p-3 rounded-md dark:bg-zinc-900/60">
       <CreatePostForm id={subForum.id} />
-    </main>
+    </div>
   );
 };
 

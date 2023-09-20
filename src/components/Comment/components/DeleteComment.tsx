@@ -4,7 +4,7 @@ import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { Loader2, X } from 'lucide-react';
-import { FC } from 'react';
+import { Dispatch, FC, SetStateAction } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,19 +17,35 @@ import {
   AlertDialogTrigger,
 } from '../../ui/AlertDialog';
 import { buttonVariants } from '../../ui/Button';
+import { ExtendedComment } from '..';
+import { ExtendedSubComment } from '../SubComment';
 
-interface DeleteCommentProps {
+type DeleteCommentProps = {
   commentId: number;
-  callbackURL: string;
-}
+  APIQuery: string;
+} & (
+  | {
+      type: 'COMMENT';
+      setComments: Dispatch<SetStateAction<ExtendedComment[]>>;
+    }
+  | {
+      type: 'SUB_COMMENT';
+      setComments: Dispatch<SetStateAction<ExtendedSubComment[]>>;
+    }
+);
 
-const DeleteComment: FC<DeleteCommentProps> = ({ commentId, callbackURL }) => {
+const DeleteComment: FC<DeleteCommentProps> = ({
+  type,
+  commentId,
+  APIQuery,
+  setComments,
+}) => {
   const { loginToast, notFoundToast, serverErrorToast, successToast } =
     useCustomToast();
   const { mutate: Delete, isLoading: isDeleting } = useMutation({
     mutationKey: ['delete-comment', commentId],
     mutationFn: async () => {
-      await axios.delete(`${callbackURL}/${commentId}`);
+      await axios.delete(`${APIQuery}`);
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
@@ -40,7 +56,13 @@ const DeleteComment: FC<DeleteCommentProps> = ({ commentId, callbackURL }) => {
       return serverErrorToast();
     },
     onSuccess: () => {
-      return successToast();
+      type === 'COMMENT'
+        ? setComments((prev) =>
+            prev.filter((comment) => comment.id !== commentId)
+          )
+        : setComments((prev) =>
+            prev.filter((comment) => comment.id !== commentId)
+          );
     },
   });
 

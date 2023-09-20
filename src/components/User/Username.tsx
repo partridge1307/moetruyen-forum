@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import type { User } from '@prisma/client';
 import { FC, HTMLAttributes } from 'react';
 
-interface UsernameProps extends HTMLAttributes<HTMLHeadElement> {
+interface UsernameProps extends HTMLAttributes<HTMLParagraphElement> {
   user: Pick<User, 'color' | 'name'>;
   className?: string;
 }

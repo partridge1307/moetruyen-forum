@@ -1,11 +1,29 @@
-import { FacebookIcon } from 'lucide-react';
+import { Bell, FacebookIcon, Menu } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import UserDropdown from '../Auth/UserDropdown';
 import { Icons } from '../Icons';
 import ThemeChangeClient from '../ThemeChangeClient';
-import Sidebar from './Sidebar';
+import { Search as SearchIcon } from 'lucide-react';
+import { getAuthSession } from '@/lib/auth';
 
-const Navbar = () => {
+const Sidebar = dynamic(() => import('./Sidebar'), {
+  loading: () => (
+    <Menu aria-label="sidebar button skeleton" className="h-8 w-8" />
+  ),
+});
+const Search = dynamic(() => import('@/components/Search/index'), {
+  ssr: false,
+  loading: () => <SearchIcon className="w-7 h-7" aria-label="Search button" />,
+});
+const Notify = dynamic(() => import('@/components/Notify'), {
+  ssr: false,
+  loading: () => <Bell aria-label="Notify button" className="w-7 h-7" />,
+});
+
+const Navbar = async () => {
+  const session = await getAuthSession();
+
   return (
     <>
       <nav className="sticky inset-x-0 top-0 mb-4 lg:mb-10 h-fit p-2 z-30 border-b bg-slate-100 dark:bg-zinc-800">
@@ -33,15 +51,9 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-8">
-            <div className="flex items-center gap-4">
-              <a target="_blank" href="https://www.facebook.com/Bfangteam">
-                <FacebookIcon className="w-6 h-6" />
-              </a>
+            <Search />
 
-              <a target="_blank" href="https://discord.gg/dongmoe">
-                <Icons.discord className="w-6 h-6 dark:fill-white" />
-              </a>
-            </div>
+            {!!session && <Notify session={session} />}
 
             <UserDropdown />
           </div>

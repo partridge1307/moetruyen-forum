@@ -6,11 +6,11 @@ import {
 } from '@/components/ui/Sheet';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { Home, Menu } from 'lucide-react';
-import ThemeSwitch from '../ThemeSwitch';
-import Link from 'next/link';
-import { buttonVariants } from '../ui/Button';
 import { cn } from '@/lib/utils';
+import { ArrowRight, Home, Menu } from 'lucide-react';
+import Link from 'next/link';
+import ThemeSwitch from '../ThemeSwitch';
+import { buttonVariants } from '../ui/Button';
 
 const Sidebar = async () => {
   const session = await getAuthSession();
@@ -64,16 +64,16 @@ const Sidebar = async () => {
               {!!session && (
                 <SheetClose asChild>
                   <Link
-                    href="/followed-subforum"
+                    href="/followed-forum"
                     className={cn(buttonVariants(), 'w-full py-6')}
                   >
-                    Subforum đang theo dõi
+                    Forum đang theo dõi
                   </Link>
                 </SheetClose>
               )}
 
               <div className="space-y-2">
-                <h2 className="text-lg font-semibold">SubForum của bạn</h2>
+                <h2 className="text-lg font-semibold">Forum của bạn</h2>
                 {!!session && !!subForum ? (
                   subForum?.length ? (
                     <div className="space-y-2 overflow-auto scrollbar dark:scrollbar--dark">
@@ -99,13 +99,28 @@ const Sidebar = async () => {
           </section>
         </aside>
 
-        <footer className="flex justify-between items-center p-2 dark:bg-zinc-800">
-          <div>
-            <p className="text-lg">©Moetruyen</p>
-            <p className="text-sm">Version 9w2</p>
-          </div>
+        <footer className="p-2 divide-y dark:divide-zinc-700 dark:bg-zinc-800">
+          <a
+            target="_blank"
+            href={`${process.env.MAIN_URL!}/social`}
+            aria-label="Moetruyen social button"
+            className={cn(
+              buttonVariants({ variant: 'link' }),
+              'px-0 space-x-2'
+            )}
+          >
+            <span>Cộng đồng</span>
+            <ArrowRight className="w-5 h-5" />
+          </a>
 
-          <ThemeSwitch />
+          <div className="flex justify-between items-center">
+            <dl>
+              <dt className="text-lg">©Moetruyen</dt>
+              <dd className="text-sm">Version 9w2</dd>
+            </dl>
+
+            <ThemeSwitch />
+          </div>
         </footer>
       </SheetContent>
     </Sheet>

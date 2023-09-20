@@ -33,6 +33,7 @@ const PostShareButton = dynamic(() => import('@/components/PostShareButton'), {
     <div className="w-28 h-10 rounded-md animate-pulse dark:bg-zinc-900" />
   ),
 });
+const DeletePostServer = dynamic(() => import('@/components/DeletePostServer'));
 const Comments = dynamic(() => import('@/components/Comment'), {
   ssr: false,
   loading: () => <CommentSkeleton />,
@@ -75,33 +76,39 @@ export async function generateMetadata({
       absolute: post.title,
     },
     description: `Bài viết ${post.title} - ${post.subForum.title} | Moetruyen`,
-    keywords: ['Post', 'Forum', post.title, post.subForum.title, 'Moetruyen'],
+    keywords: [
+      'Post',
+      'Bài viết',
+      'Forum',
+      'Diễn đàn',
+      post.title,
+      post.subForum.title,
+      'Moetruyen',
+    ],
     alternates: {
       canonical: `${process.env.NEXTAUTH_URL}/${params.slug}/${params.postId}`,
     },
     openGraph: {
+      ...(post.subForum.banner && {
+        images: [
+          { url: post.subForum.banner, alt: `${post.subForum.title} Banner` },
+        ],
+      }),
       url: `${process.env.NEXTAUTH_URL}/${params.slug}/${params.postId}`,
       siteName: 'Moetruyen Forum',
       title: post.title,
       description: `Bài viết ${post.title} - ${post.subForum.title} | Moetruyen`,
-      images: [
-        {
-          url: post.subForum.banner ?? '',
-          alt: `Ảnh bìa ${post.subForum.title}`,
-        },
-      ],
     },
     twitter: {
+      ...(post.subForum.banner && {
+        images: [
+          { url: post.subForum.banner, alt: `${post.subForum.title} Banner` },
+        ],
+        card: 'summary_large_image',
+      }),
       site: 'Moetruyen Forum',
       title: post.title,
       description: `Bài viết ${post.title} - ${post.subForum.title} | Moetruyen`,
-      card: 'summary_large_image',
-      images: [
-        {
-          url: post.subForum.banner ?? '',
-          alt: `Ảnh bìa ${post.subForum.title}`,
-        },
-      ],
     },
   };
 }
@@ -119,6 +126,7 @@ const page: FC<pageProps> = async ({ params }) => {
         createdAt: true,
         updatedAt: true,
         authorId: true,
+        subForumId: true,
         author: {
           select: {
             name: true,
@@ -131,6 +139,23 @@ const page: FC<pageProps> = async ({ params }) => {
   ]);
   if (!post) return notFound();
 
+  let isManager = false;
+  if (session) {
+    const subscriptions = await db.subscription.findUnique({
+      where: {
+        userId_subForumId: {
+          userId: session.user.id,
+          subForumId: post.subForumId,
+        },
+      },
+      select: {
+        isManager: true,
+      },
+    });
+
+    if (subscriptions && subscriptions.isManager) isManager = true;
+  }
+
   return (
     <div className="space-y-16">
       <section className="p-2 rounded-md dark:bg-zinc-700">
@@ -139,7 +164,12 @@ const page: FC<pageProps> = async ({ params }) => {
             <h1 className="text-xl font-semibold">{post.title}</h1>
             <h2 className="flex items-center gap-2 text-sm">
               <span>Đăng bởi</span>
-              <a href={`/user/${post.author.name?.split(' ').join('-')}`}>
+              <a
+                target="_blank"
+                href={`${process.env.MAIN_URL}/user/${post.author.name
+                  ?.split(' ')
+                  .join('-')}`}
+              >
                 <Username user={post.author} />
               </a>
             </h2>
@@ -159,7 +189,7 @@ const page: FC<pageProps> = async ({ params }) => {
             </dl>
           </div>
 
-          <MTEditorOutput id={post.id} content={post.content} />
+          {/* <MTEditorOutput id={post.id} content={post.content} /> */}
         </article>
 
         <div className="flex flex-wrap justify-between gap-6">
@@ -180,7 +210,7 @@ const page: FC<pageProps> = async ({ params }) => {
 
           <div className="flex items-center gap-4">
             <PostShareButton
-              url={`/m/${params.slug}/${post.id}`}
+              url={`/${params.slug}/${post.id}`}
               title={post.title}
             />
 
@@ -192,14 +222,23 @@ const page: FC<pageProps> = async ({ params }) => {
                 <Pencil className="w-5 h-5" /> Chỉnh sửa
               </Link>
             )}
+
+            {!!session && (
+              <DeletePostServer
+                session={session}
+                subForumId={post.subForumId}
+                postId={post.id}
+                authorId={post.authorId}
+                slug={params.slug}
+              />
+            )}
           </div>
         </div>
       </section>
 
       <section className="space-y-10">
         <h1 className="text-xl font-semibold">Bình luận</h1>
-
-        <Comments postId={post.id} />
+        <Comments id={post.id} session={session} isManager={isManager} />
       </section>
     </div>
   );

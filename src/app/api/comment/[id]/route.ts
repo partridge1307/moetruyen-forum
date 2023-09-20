@@ -119,8 +119,24 @@ export async function DELETE(
     await db.$transaction([
       db.postComment.findUniqueOrThrow({
         where: {
-          creatorId: session.user.id,
           id: +context.params.id,
+          OR: [
+            {
+              creatorId: session.user.id,
+            },
+            {
+              post: {
+                subForum: {
+                  subscriptions: {
+                    some: {
+                      userId: session.user.id,
+                      isManager: true,
+                    },
+                  },
+                },
+              },
+            },
+          ],
         },
       }),
       db.postComment.delete({

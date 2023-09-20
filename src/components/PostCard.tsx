@@ -9,7 +9,7 @@ import { useElementSize } from '@mantine/hooks';
 import type { VoteType } from '@prisma/client';
 import { MessageSquare } from 'lucide-react';
 import dynamic from 'next/dist/shared/lib/dynamic';
-import { FC, memo } from 'react';
+import { FC } from 'react';
 
 const MoetruyenEditorOutput = dynamic(
   () => import('@/components/Editor/MoetruyenEditorOutput'),
@@ -73,13 +73,13 @@ const PostCard: FC<PostCardProps> = ({
         />
         <a
           target="_blank"
-          href={`/m/${subForumSlug}/${post.id}`}
+          href={`/${subForumSlug}/${post.id}`}
           className="flex items-end gap-2"
         >
           <MessageSquare className="w-5 h-5" /> {post._count.comments}
         </a>
         <PostShareButton
-          url={`/m/${subForumSlug}/${post.id}`}
+          url={`/${subForumSlug}/${post.id}`}
           title={post.title}
         />
       </div>
@@ -87,4 +87,4 @@ const PostCard: FC<PostCardProps> = ({
   );
 };
 
-export default memo(PostCard);
+export default PostCard;

@@ -1,5 +1,6 @@
 'use client';
 
+import ThreadImageSkeleton from '@/components/Skeleton/ThreadImageSkeleton';
 import { Button } from '@/components/ui/Button';
 import { Form } from '@/components/ui/Form';
 import { useCustomToast } from '@/hooks/use-custom-toast';
@@ -20,6 +21,7 @@ import ThreadTitleField from './ThreadTitleFormField';
 
 const ThreadThumbnailField = dynamic(() => import('./ThreadImageFormField'), {
   ssr: false,
+  loading: () => <ThreadImageSkeleton />,
 });
 
 const Thread = () => {
@@ -30,6 +32,9 @@ const Thread = () => {
   const form = useForm<CreateThreadPayload>({
     resolver: zodResolver(CreateThreadValidator),
     defaultValues: {
+      thumbnail: '',
+      title: '',
+      slug: '',
       canSend: true,
     },
   });
@@ -74,6 +79,7 @@ const Thread = () => {
     },
     onSuccess: (data) => {
       router.push(`/${data}`);
+      router.refresh();
 
       return successToast();
     },
@@ -86,10 +92,10 @@ const Thread = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-6">
-        <ThreadThumbnailField form={form} />
-        <ThreadTitleField form={form} />
-        <ThreadSlugFormField form={form} />
-        <ThreadCanSendField form={form} />
+        <ThreadThumbnailField type="CREATE" form={form} />
+        <ThreadTitleField type="CREATE" form={form} />
+        <ThreadSlugFormField type="CREATE" form={form} />
+        <ThreadCanSendField type="CREATE" form={form} />
 
         <div className="flex justify-end gap-4">
           <Button

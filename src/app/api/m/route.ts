@@ -238,7 +238,7 @@ export async function DELETE(req: Request) {
       .object({ subForumId: z.number() })
       .parse(await req.json());
 
-    await Promise.all([
+    await db.$transaction([
       db.subForum.findUniqueOrThrow({
         where: {
           id: subForumId,
@@ -250,13 +250,16 @@ export async function DELETE(req: Request) {
           id: subForumId,
         },
       }),
-      DeleteSubForumImage(subForumId),
     ]);
+    await DeleteSubForumImage(subForumId);
 
     return new Response('OK');
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response('Invalid', { status: 422 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return new Response('Not found', { status: 404 });
     }
     return new Response('Something went wrong', { status: 500 });
   }

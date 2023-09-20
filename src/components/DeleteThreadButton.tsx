@@ -41,7 +41,7 @@ const DeleteThreadButton: FC<DeleteThreadButtonProps> = ({ subForumId }) => {
       return serverErrorToast();
     },
     onSuccess: () => {
-      router.push('/m');
+      router.push('/');
       router.refresh();
 
       return successToast();

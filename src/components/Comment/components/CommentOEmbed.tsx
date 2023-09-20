@@ -1,7 +1,12 @@
-import { FC, memo } from 'react';
+import type { Prisma } from '@prisma/client';
+import { FC } from 'react';
 
 interface CommentOEmbedProps {
-  oEmbed: {
+  oEmbed: Prisma.JsonValue;
+}
+
+const CommentOEmbed: FC<CommentOEmbedProps> = ({ oEmbed }) => {
+  const { link, meta } = oEmbed as {
     link: string;
     meta: {
       title?: string;
@@ -11,10 +16,6 @@ interface CommentOEmbedProps {
       };
     };
   };
-}
-
-const CommentOEmbed: FC<CommentOEmbedProps> = ({ oEmbed }) => {
-  const { link, meta } = oEmbed;
   const url = new URL(link);
 
   return (
@@ -39,11 +40,11 @@ const CommentOEmbed: FC<CommentOEmbedProps> = ({ oEmbed }) => {
         <p className="moetruyen-editor-link line-clamp-1">{url.host}</p>
 
         <dl>
-          {meta.title && (
+          {!!meta.title && (
             <dt className="line-clamp-2 font-semibold">{meta.title}</dt>
           )}
 
-          {oEmbed.meta.description && (
+          {!!meta.description && (
             <dd className="text-xs md:text-sm line-clamp-2">
               {meta.description}
             </dd>
@@ -54,4 +55,4 @@ const CommentOEmbed: FC<CommentOEmbedProps> = ({ oEmbed }) => {
   );
 };
 
-export default memo(CommentOEmbed);
+export default CommentOEmbed;

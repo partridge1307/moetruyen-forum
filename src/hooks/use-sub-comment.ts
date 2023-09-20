@@ -8,13 +8,12 @@ export const useSubComments = <TData>(commentId: number, APIQuery: string) => {
   return useQuery({
     queryKey: [`sub-comment-query`, commentId],
     queryFn: async () => {
-      const { data } = await axios.get(`${APIQuery}/${commentId}/sub-comment`);
+      const { data } = await axios.get(`${APIQuery}/sub-comment`);
 
       return data as TData[];
     },
     onError: () => {
       return serverErrorToast();
     },
-    refetchInterval: 15000,
   });
 };
