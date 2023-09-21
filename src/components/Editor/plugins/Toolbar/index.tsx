@@ -60,12 +60,6 @@ import { FloatingLinkEditor, getSelectedNode } from '../Link';
 
 const lowPriority = 1;
 
-export function FillURL() {
-  const srcfile = prompt('Enter the URL of the image:', '');
-
-  return srcfile;
-}
-
 const blockTypeToBlockName = {
   paragraph: 'Normal',
   quote: 'Quote',

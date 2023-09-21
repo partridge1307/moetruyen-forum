@@ -50,7 +50,7 @@ const Navbar = async () => {
             </Link>
           </div>
 
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-3 lg:gap-8">
             <Search />
 
             {!!session && <Notify session={session} />}

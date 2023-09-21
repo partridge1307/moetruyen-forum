@@ -4,16 +4,20 @@ import UserAvatar from '@/components/User/UserAvatar';
 import Username from '@/components/User/Username';
 import { useSubComments } from '@/hooks/use-sub-comment';
 import { formatTimeToNow } from '@/lib/utils';
+import { usePrevious } from '@mantine/hooks';
 import type { PostComment, PostVote, User } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
-import { FC, useEffect, useState } from 'react';
-import dynamic from 'next/dynamic';
-import CommentOEmbed from './components/CommentOEmbed';
-import CommentVote from './components/CommentVote';
 import type { Session } from 'next-auth';
-import { usePrevious } from '@mantine/hooks';
+import dynamic from 'next/dynamic';
+import { FC, useEffect, useState } from 'react';
+import CommentVoteSkeleton from '../Skeleton/CommentVoteSkeleton';
 import CommentContent from './components/CommentContent';
+import CommentOEmbed from './components/CommentOEmbed';
 
+const CommentVote = dynamic(() => import('./components/CommentVote'), {
+  ssr: false,
+  loading: () => <CommentVoteSkeleton />,
+});
 const CommentInput = dynamic(() => import('./components/CommentInput'), {
   ssr: false,
 });

@@ -8,8 +8,17 @@ import type { Session } from 'next-auth';
 import dynamic from 'next/dynamic';
 import { FC, useEffect, useRef, useState } from 'react';
 import CommentCard from './CommentCard';
-import CommentInput from './components/CommentInput';
+import EditorSkeleton from '../Skeleton/EditorSkeleton';
 
+const CommentInput = dynamic(() => import('./components/CommentInput'), {
+  ssr: false,
+  loading: () => (
+    <div>
+      <EditorSkeleton />
+      <div className="h-10 rounded-md animate-pulse dark:bg-zinc-900" />
+    </div>
+  ),
+});
 const DeleteComment = dynamic(() => import('./components/DeleteComment'), {
   ssr: false,
 });
@@ -54,7 +63,9 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
   }, [entry?.isIntersecting, fetchNextPage, hasNextPage]);
 
   useEffect(() => {
-    setComments(commentsData?.pages.flatMap((page) => page.comments) ?? []);
+    if (commentsData?.pages) {
+      setComments(commentsData.pages.flatMap((page) => page.comments) ?? []);
+    }
   }, [commentsData?.pages]);
 
   return (

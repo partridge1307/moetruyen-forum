@@ -5,7 +5,7 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: [
-      '@aws-sdk/client-s3',
+      '@aws-sdk',
       'react-image-crop',
       'react-textarea-autosize',
       'unique-names-generator',

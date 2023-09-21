@@ -155,21 +155,8 @@ span.moetruyen-editor-image {
   cursor: nw-resize;
 }
 
-.moetruyen-emoji {
-  color: transparent;
-  background-repeat: no-repeat;
-  background-position: center;
-  font-size: 70px;
-  background-size: 100px 100px;
-  user-select: none;
-}
-
-.emoji-inner::selection {
-  display: none;
-}
-
 .typeahead-popover {
-  padding: 0.25rem;
+  padding: 0.125rem;
   border-radius: 0.375rem;
 }
 

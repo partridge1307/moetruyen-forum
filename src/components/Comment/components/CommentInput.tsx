@@ -1,7 +1,7 @@
 'use client';
 
+import MTEditor from '@/components/Editor/MoetruyenEditor';
 import { $isImageNode, type ImageNode } from '@/components/Editor/nodes/Image';
-import EditorSkeleton from '@/components/Skeleton/EditorSkeleton';
 import { Button } from '@/components/ui/Button';
 import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useFetchOEmbed } from '@/hooks/use-fetch-oEmbed';
@@ -12,7 +12,6 @@ import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { CLEAR_EDITOR_COMMAND, type LexicalEditor } from 'lexical';
 import type { Session } from 'next-auth';
-import dynamic from 'next/dynamic';
 import {
   FC,
   useCallback,
@@ -24,11 +23,6 @@ import {
 } from 'react';
 import { ExtendedComment } from '..';
 import { ExtendedSubComment } from '../SubComment';
-
-const MTEditor = dynamic(() => import('@/components/Editor/MoetruyenEditor'), {
-  ssr: false,
-  loading: () => <EditorSkeleton />,
-});
 
 type CommentInputProps = {
   session: Session;
@@ -85,21 +79,24 @@ const CommentInput: FC<CommentInputProps> = ({
     },
     onMutate: (payload) => {
       const optimisticComment: ExtendedComment = {
-        id: Math.floor(Math.random() * 1 * 1000 * 1000),
+        // @ts-expect-error
+        id: crypto.randomUUID(),
         // @ts-expect-error
         content: payload.content,
         oEmbed: payload.oEmbed as Prisma.JsonValue,
         createdAt: new Date(Date.now()),
-        creatorId: session.user.id,
         votes: [],
+        creatorId: session.user.id,
         creator: {
           name: session.user.name,
           color: session.user.color,
           image: session.user.image,
         },
-        _count: {
-          replies: 0,
-        },
+        ...(type === 'COMMENT' && {
+          _count: {
+            replies: 0,
+          },
+        }),
       };
 
       type === 'COMMENT'
@@ -109,18 +106,16 @@ const CommentInput: FC<CommentInputProps> = ({
     onSuccess: (id) => {
       type === 'COMMENT'
         ? setComments((prev) => {
-            const firstComment = prev.shift();
-            if (!firstComment) return prev;
+            const firstComment = prev[0];
             firstComment.id = id;
 
-            return [firstComment, ...prev];
+            return [firstComment, ...prev.slice(1)];
           })
         : setComments((prev) => {
-            const lastComment = prev.pop();
-            if (!lastComment) return prev;
+            const lastComment = prev[prev.length - 1];
             lastComment.id = id;
 
-            return [...prev, lastComment];
+            return [...prev.slice(0, -1), lastComment];
           });
 
       editorRef.current?.dispatchCommand(CLEAR_EDITOR_COMMAND, undefined);
