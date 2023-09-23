@@ -1,6 +1,6 @@
 'use client';
 
-import { serverDomain } from '@/config';
+import { mainURL } from '@/config';
 import type { User } from '@prisma/client';
 import { FC } from 'react';
 import UserAvatar from '../User/UserAvatar';
@@ -18,7 +18,7 @@ const UserSearch: FC<UserSearchProps> = ({ users }) => {
         <a
           key={idx}
           target="_blank"
-          href={`${serverDomain}/user/${user.name?.split(' ').join('-')}`}
+          href={`${mainURL}/user/${user.name?.split(' ').join('-')}`}
         >
           <SheetClose className="w-full text-start grid grid-cols-[.5fr_1fr] lg:grid-cols-[.1fr_1fr] gap-4 p-2 rounded-md transition-colors hover:dark:bg-zinc-800">
             <div className="aspect-square">

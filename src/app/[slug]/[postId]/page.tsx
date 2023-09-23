@@ -55,6 +55,7 @@ export async function generateMetadata({
     },
     select: {
       title: true,
+      description: true,
       subForum: {
         select: {
           title: true,
@@ -75,7 +76,10 @@ export async function generateMetadata({
       default: post.title,
       absolute: post.title,
     },
-    description: `Bài viết ${post.title} - ${post.subForum.title} | Moetruyen`,
+    description:
+      post.description.length === 1024
+        ? `${post.description}...`
+        : post.description,
     keywords: [
       'Post',
       'Bài viết',
@@ -97,7 +101,10 @@ export async function generateMetadata({
       url: `${process.env.NEXTAUTH_URL}/${params.slug}/${params.postId}`,
       siteName: 'Moetruyen Forum',
       title: post.title,
-      description: `Bài viết ${post.title} - ${post.subForum.title} | Moetruyen`,
+      description:
+        post.description.length === 1024
+          ? `${post.description}...`
+          : post.description,
     },
     twitter: {
       ...(post.subForum.banner && {
@@ -108,7 +115,10 @@ export async function generateMetadata({
       }),
       site: 'Moetruyen Forum',
       title: post.title,
-      description: `Bài viết ${post.title} - ${post.subForum.title} | Moetruyen`,
+      description:
+        post.description.length === 1024
+          ? `${post.description}...`
+          : post.description,
     },
   };
 }
@@ -189,7 +199,7 @@ const page: FC<pageProps> = async ({ params }) => {
             </dl>
           </div>
 
-          {/* <MTEditorOutput id={post.id} content={post.content} /> */}
+          <MTEditorOutput id={post.id} content={post.content} />
         </article>
 
         <div className="flex flex-wrap justify-between gap-6">

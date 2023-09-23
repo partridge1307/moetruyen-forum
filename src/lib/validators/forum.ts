@@ -129,5 +129,6 @@ export const CreatePostValidator = z.object({
       'Chỉ chấp nhận kí tự in hoa, in thường, gạch dưới, khoảng cách hoặc số'
     ),
   content: z.any() as ZodType<SerializedEditorState<SerializedLexicalNode>>,
+  description: z.string(),
 });
 export type CreatePostPayload = z.infer<typeof CreatePostValidator>;

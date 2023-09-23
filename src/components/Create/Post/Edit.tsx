@@ -15,7 +15,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
 
 interface EditProps {
-  post: Pick<Post, 'id' | 'content' | 'title'> & {
+  post: Pick<Post, 'id' | 'content' | 'title' | 'description'> & {
     subForum: Pick<SubForum, 'slug'>;
   };
 }
@@ -31,6 +31,7 @@ const PostEdit: FC<EditProps> = ({ post }) => {
       title: post.title,
       // @ts-ignore
       content: post.content,
+      description: post.description,
     },
   });
 
@@ -58,6 +59,7 @@ const PostEdit: FC<EditProps> = ({ post }) => {
     const payload: CreatePostPayload = {
       title: values.title,
       content: values.content ?? post.content,
+      description: values.description ?? post.description,
     };
 
     Update(payload);

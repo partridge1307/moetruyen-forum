@@ -1,7 +1,7 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { serverDomain } from '@/config';
+import { mainURL } from '@/config';
 import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useDebouncedValue } from '@mantine/hooks';
 import type { Manga, MangaAuthor, SubForum, User } from '@prisma/client';
@@ -89,7 +89,7 @@ const Index = () => {
           onSubmit={(e) => {
             e.preventDefault();
 
-            router.push(`${serverDomain}/search?q=${query}`);
+            router.push(`${mainURL}/search?q=${query}`);
 
             const target = document.getElementById('sheet-close-button');
             target?.click();

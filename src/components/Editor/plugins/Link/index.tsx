@@ -44,7 +44,7 @@ function positionEditorElement(
     editor.style.top = `${rect.top + rect.height + window.scrollY + 10}px`;
 
     const bodyClientDivided = document.body.clientWidth / 3;
-    const editorMarginLeftDivided = rect.left / 3 + editor.offsetWidth / 3;
+    const editorMarginLeftDivided = rect.left / 3 + editor.offsetWidth;
 
     bodyClientDivided > editorMarginLeftDivided
       ? (editor.style.left = `${

@@ -28,6 +28,7 @@ const CreatePostForm: FC<CreatePostFormProps> = ({ id }) => {
     defaultValues: {
       title: '',
       content: undefined,
+      description: '',
     },
   });
 

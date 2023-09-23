@@ -94,6 +94,7 @@ const page: FC<pageProps> = async ({ params }) => {
       id: true,
       title: true,
       content: true,
+      description: true,
       subForum: {
         select: {
           slug: true,

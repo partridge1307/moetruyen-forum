@@ -128,7 +128,9 @@ export async function POST(req: Request, context: { params: { id: string } }) {
     const session = await getAuthSession();
     if (!session) return new Response('Unauthorized', { status: 401 });
 
-    const { title, content } = CreatePostValidator.parse(await req.json());
+    const { title, content, description } = CreatePostValidator.parse(
+      await req.json()
+    );
 
     await db.$transaction([
       db.subForum.findUniqueOrThrow({
@@ -155,9 +157,12 @@ export async function POST(req: Request, context: { params: { id: string } }) {
       db.post.create({
         data: {
           subForumId: +context.params.id,
+          authorId: session.user.id,
           title,
           content: { ...content },
-          authorId: session.user.id,
+          description: !!description
+            ? description.slice(0, 1024)
+            : 'Không có mô tả',
         },
       }),
     ]);
@@ -179,7 +184,9 @@ export async function PATCH(req: Request, context: { params: { id: string } }) {
     const session = await getAuthSession();
     if (!session) return new Response('Unauthorized', { status: 401 });
 
-    const { title, content } = CreatePostValidator.parse(await req.json());
+    const { title, content, description } = CreatePostValidator.parse(
+      await req.json()
+    );
 
     await db.post.update({
       where: {
@@ -189,6 +196,9 @@ export async function PATCH(req: Request, context: { params: { id: string } }) {
       data: {
         title,
         content: { ...content },
+        description: !!description
+          ? description.slice(0, 1024)
+          : 'Không có mô tả',
       },
     });
 

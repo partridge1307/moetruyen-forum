@@ -1,4 +1,3 @@
-import { serverDomain } from '@/config';
 import { cn, formatTimeToNow } from '@/lib/utils';
 import { FC } from 'react';
 import type { ExtendedNotify } from '..';
@@ -13,7 +12,7 @@ const Follow: FC<followProps> = ({ followNotify }) => {
       <a
         key={notify.id}
         target="_blank"
-        href={`${serverDomain}${notify.endPoint}`}
+        href={notify.endPoint}
         className="block"
         onClick={() => fetch(`/api/notify/${notify.id}`, { method: 'PATCH' })}
       >
