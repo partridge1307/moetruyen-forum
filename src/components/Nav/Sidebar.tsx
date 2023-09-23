@@ -99,7 +99,7 @@ const Sidebar = async () => {
           </section>
         </aside>
 
-        <footer className="p-2 divide-y dark:divide-zinc-700 dark:bg-zinc-800">
+        <footer className="p-2 pt-0 divide-y dark:divide-zinc-700 dark:bg-zinc-800">
           <a
             target="_blank"
             href={`${process.env.MAIN_URL!}/social`}
