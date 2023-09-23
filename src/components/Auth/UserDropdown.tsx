@@ -42,7 +42,11 @@ const UserDropdown = async () => {
               />
             </div>
 
-            <a href="/" className={cn(buttonVariants(), 'w-full')}>
+            <a
+              href={process.env.MANAGE_URL}
+              target="_blank"
+              className={cn(buttonVariants(), 'w-full')}
+            >
               Quản lý
             </a>
 
