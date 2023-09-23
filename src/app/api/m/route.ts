@@ -5,6 +5,7 @@ import { normalizeText } from '@/lib/utils';
 import { CreateThreadFormValidator } from '@/lib/validators/forum';
 import { Prisma } from '@prisma/client';
 import { ZodError, z } from 'zod';
+import { randomUUID } from 'crypto';
 
 const PostValidator = z.object({
   limit: z.string(),
@@ -172,7 +173,7 @@ export async function POST(req: Request) {
       }),
       db.subForum.create({
         data: {
-          slug: title,
+          slug: randomUUID(),
           title,
           creatorId: session.user.id,
           canSend: canSend === 'true' ? true : false,
