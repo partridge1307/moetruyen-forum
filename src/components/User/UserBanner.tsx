@@ -19,6 +19,7 @@ const UserBanner: FC<BannerProps> = ({ user, className }) => {
           priority
           src={user.banner}
           alt={`${user.name} Banner`}
+          className={className}
         />
       ) : (
         <div
