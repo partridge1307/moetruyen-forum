@@ -190,6 +190,7 @@ const Toolbar = () => {
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
           <button
+            aria-label="bold format button"
             type="button"
             title="Ctrl + B"
             className={cn('p-1 rounded-md transition-colors', {
@@ -200,6 +201,7 @@ const Toolbar = () => {
             <Bold className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           <button
+            aria-label="italic format button"
             type="button"
             title="Ctrl + I"
             className={cn('p-1 rounded-md transition-colors', {
@@ -212,6 +214,7 @@ const Toolbar = () => {
             <Italic className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           <button
+            aria-label="underline format button"
             type="button"
             title="Ctrl + U"
             className={cn('p-1 rounded-md transition-colors', {
@@ -224,6 +227,7 @@ const Toolbar = () => {
             <Underline className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           <button
+            aria-label="strikethrough format button"
             type="button"
             className={cn('p-1 rounded-md transition-colors', {
               'dark:bg-zinc-700': selectedInlineStyle.includes('strikethrough'),
@@ -237,6 +241,7 @@ const Toolbar = () => {
           {blockType in blockTypeToBlockName && (
             <>
               <button
+                aria-label="list check format button"
                 type="button"
                 className={`p-1 rounded-md transition-colors ${
                   blockType === 'check' && 'dark:bg-zinc-700'
@@ -255,6 +260,7 @@ const Toolbar = () => {
                 <ListChecks className="w-11 h-11 lg:w-5 lg:h-5" />
               </button>
               <button
+                aria-label="quote format button"
                 type="button"
                 className={`p-1 rounded-md transition-colors ${
                   blockType === 'quote' && 'dark:bg-zinc-700'
@@ -316,6 +322,7 @@ const Toolbar = () => {
         <ImageInputBody editor={editor} />
         <DropdownMenu>
           <DropdownMenuTrigger
+            aria-label="link insert button"
             type="button"
             className={cn(
               'p-1 transition-opacity',
@@ -351,6 +358,7 @@ const Toolbar = () => {
 
       <div className="flex items-center gap-2 pr-2">
         <button
+          aria-label="undo button"
           type="button"
           title="Ctrl + Z"
           disabled={!canUndo}
@@ -362,6 +370,7 @@ const Toolbar = () => {
           <Undo className="w-11 h-11 lg:w-5 lg:h-5" />
         </button>
         <button
+          aria-label="redo button"
           type="button"
           disabled={!canRedo}
           className={cn('p-1 transition-opacity', !canRedo && 'opacity-50')}
