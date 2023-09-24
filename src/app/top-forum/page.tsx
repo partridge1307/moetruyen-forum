@@ -65,7 +65,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
     <main className="containter mx-auto w-4/5 space-y-10">
       <h1 className="text-xl font-semibold">Top Forum</h1>
 
-      <section className="grid grid-cols-2 gap-4 rounded-md dark:bg-zinc-900">
+      <section className="grid grid-cols-2 gap-4 rounded-md dark:bg-zinc-900/60">
         {!!subForums.length ? (
           subForums.map((sub) => (
             <Link
