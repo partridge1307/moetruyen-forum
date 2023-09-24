@@ -183,7 +183,7 @@ const page: FC<pageProps> = async ({ params }) => {
       <div className="space-y-16">
         <section className="p-2 rounded-md dark:bg-zinc-700">
           <article className="space-y-10">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="text-sm flex items-center gap-1">
                 <a
                   href={`${process.env.MAIN_URL}/user/${post.author.name

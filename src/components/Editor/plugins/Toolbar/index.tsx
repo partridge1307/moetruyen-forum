@@ -197,7 +197,7 @@ const Toolbar = () => {
             })}
             onClick={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}
           >
-            <Bold className="w-5 h-5" />
+            <Bold className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           <button
             type="button"
@@ -209,7 +209,7 @@ const Toolbar = () => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')
             }
           >
-            <Italic className="w-5 h-5" />
+            <Italic className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           <button
             type="button"
@@ -221,7 +221,7 @@ const Toolbar = () => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')
             }
           >
-            <Underline className="w-5 h-5" />
+            <Underline className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           <button
             type="button"
@@ -232,7 +232,7 @@ const Toolbar = () => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')
             }
           >
-            <Strikethrough className="w-5 h-5" />
+            <Strikethrough className="w-11 h-11 lg:w-5 lg:h-5" />
           </button>
           {blockType in blockTypeToBlockName && (
             <>
@@ -252,7 +252,7 @@ const Toolbar = () => {
                   }
                 }}
               >
-                <ListChecks className="w-5 h-5" />
+                <ListChecks className="w-11 h-11 lg:w-5 lg:h-5" />
               </button>
               <button
                 type="button"
@@ -270,7 +270,7 @@ const Toolbar = () => {
                   }
                 }}
               >
-                <Quote className="w-5 h-5" />
+                <Quote className="w-11 h-11 lg:w-5 lg:h-5" />
               </button>
             </>
           )}
@@ -279,7 +279,7 @@ const Toolbar = () => {
           <SelectTrigger
             aria-label="align button"
             type="button"
-            className="w-fit px-1 bg-transparent border-none focus:ring-transparent ring-offset-transparent"
+            className="max-sm:w-11 max-sm:h-12 w-fit px-1 bg-none border-none focus:ring-transparent ring-offset-transparent"
           >
             <SelectValue />
           </SelectTrigger>
@@ -291,7 +291,7 @@ const Toolbar = () => {
                 editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
               }}
             >
-              <AlignLeft className="w-5 h-5" />
+              <AlignLeft className="w-12 h-12 lg:w-5 lg:h-5" />
             </SelectItem>
             <SelectItem
               value="center-align"
@@ -300,7 +300,7 @@ const Toolbar = () => {
                 editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
               }}
             >
-              <AlignCenter className="w-5 h-5" />
+              <AlignCenter className="w-12 h-12 lg:w-5 lg:h-5" />
             </SelectItem>
             <SelectItem
               value="right-align"
@@ -309,7 +309,7 @@ const Toolbar = () => {
                 editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
               }}
             >
-              <AlignRight className="w-5 h-5" />
+              <AlignRight className="w-12 h-12 lg:w-5 lg:h-5" />
             </SelectItem>
           </SelectContent>
         </Select>
@@ -317,10 +317,13 @@ const Toolbar = () => {
         <DropdownMenu>
           <DropdownMenuTrigger
             type="button"
-            className={cn('transition-opacity', isLinkDisabled && 'opacity-50')}
+            className={cn(
+              'p-1 transition-opacity',
+              isLinkDisabled && 'opacity-50'
+            )}
             disabled={isLinkDisabled}
           >
-            <LinkIcon className="w-5 h-5" />
+            <LinkIcon className="w-11 h-11 lg:w-5 lg:h-5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             <div className="flex items-center p-1 gap-2">
@@ -351,20 +354,20 @@ const Toolbar = () => {
           type="button"
           title="Ctrl + Z"
           disabled={!canUndo}
-          className={cn('transition-opacity', !canUndo && 'opacity-50')}
+          className={cn('p-1 transition-opacity', !canUndo && 'opacity-50')}
           onClick={() => {
             editor.dispatchCommand(UNDO_COMMAND, undefined);
           }}
         >
-          <Undo className="w-5 h-5" />
+          <Undo className="w-11 h-11 lg:w-5 lg:h-5" />
         </button>
         <button
           type="button"
           disabled={!canRedo}
-          className={cn('transition-opacity', !canRedo && 'opacity-50')}
+          className={cn('p-1 transition-opacity', !canRedo && 'opacity-50')}
           onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
         >
-          <Redo className="w-5 h-5" />
+          <Redo className="w-11 h-11 lg:w-5 lg:h-5" />
         </button>
       </div>
     </div>
