@@ -167,8 +167,8 @@ export default function AutoEmbedPlugin(): JSX.Element {
             selectOptionAndCleanUp,
             setHighlightedIndex,
           }
-        ) => {
-          return anchorElementRef.current
+        ) =>
+          anchorElementRef.current
             ? createPortal(
                 <div
                   className="typeahead-popover auto-embed-menu"
@@ -194,8 +194,8 @@ export default function AutoEmbedPlugin(): JSX.Element {
                 </div>,
                 anchorElementRef.current
               )
-            : null;
-        }}
+            : null
+        }
       />
     </>
   );
