@@ -126,8 +126,23 @@ const page = async ({ params }: { params: { slug: string } }) => {
     }),
   ]);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: posts.map((post, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      url: `${process.env.NEXTAUTH_URL}/${post.subForum.slug}/${post.id}`,
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {!!(
         (subForum.canSend && subscription) ||
         subForum.creatorId === session?.user.id ||
