@@ -129,7 +129,7 @@ const PostFeed: FC<PostFeedProps> = ({ subForumId, initialPosts, session }) => {
         </Select>
       </div>
 
-      <ul className="divide-y-2 dark:divide-zinc-700 dark:bg-zinc-900/60">
+      <ul className="divide-y-2 rounded-md dark:divide-zinc-700 dark:bg-zinc-900/60">
         {posts.length ? (
           posts.map((post, idx) => {
             const voteAmt = post.votes.reduce((acc, vote) => {
