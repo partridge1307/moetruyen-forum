@@ -9,6 +9,7 @@ import dynamic from 'next/dynamic';
 import { FC, useEffect, useRef, useState } from 'react';
 import CommentCard from './CommentCard';
 import EditorSkeleton from '../Skeleton/EditorSkeleton';
+import { cn } from '@/lib/utils';
 
 const CommentInput = dynamic(() => import('./components/CommentInput'), {
   ssr: false,
@@ -38,6 +39,7 @@ export type ExtendedComment = Pick<
   _count: {
     replies: number;
   };
+  isSending?: boolean;
 };
 
 const Comments: FC<indexProps> = ({ id, session, isManager }) => {
@@ -89,7 +91,13 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
         {comments.map((comment, idx) => {
           if (idx === comments.length - 1)
             return (
-              <li key={comment.id} ref={ref} className="flex gap-4">
+              <li
+                key={comment.id}
+                ref={ref}
+                className={cn('flex gap-4', {
+                  'opacity-70': comment.isSending,
+                })}
+              >
                 <CommentCard
                   comment={comment}
                   session={session}
@@ -97,6 +105,7 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
                 >
                   {(comment.creatorId === session?.user.id || isManager) && (
                     <DeleteComment
+                      isSending={comment.isSending}
                       type="COMMENT"
                       commentId={comment.id}
                       APIQuery={`/api/comment/${comment.id}`}
@@ -108,7 +117,12 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
             );
           else
             return (
-              <li key={comment.id} className="flex gap-4">
+              <li
+                key={comment.id}
+                className={cn('flex gap-4', {
+                  'opacity-70': comment.isSending,
+                })}
+              >
                 <CommentCard
                   comment={comment}
                   session={session}
@@ -116,6 +130,7 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
                 >
                   {(comment.creatorId === session?.user.id || isManager) && (
                     <DeleteComment
+                      isSending={comment.isSending}
                       type="COMMENT"
                       commentId={comment.id}
                       APIQuery={`/api/comment/${comment.id}`}

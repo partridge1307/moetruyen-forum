@@ -57,6 +57,7 @@ const CommentCard: FC<CommentCardProps> = ({
           {!!session && (
             <div className="flex items-center gap-4">
               <CommentVote
+                isSending={comment.isSending}
                 commentId={comment.id}
                 votes={comment.votes}
                 sessionUserId={session.user.id}

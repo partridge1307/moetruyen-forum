@@ -1,7 +1,7 @@
-import sharp from 'sharp';
-import { generateKey, resizeImage, sendCommand } from '../utils';
 import { DeleteObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import sharp from 'sharp';
 import { contabo } from '../client';
+import { generateKey, resizeImage, sendCommand } from '../utils';
 
 const UploadForumImage = async (
   image: File,
@@ -19,13 +19,15 @@ const UploadForumImage = async (
     height
   ).toBuffer();
 
-  const command = new PutObjectCommand({
-    Body: optimizedImage,
-    Bucket: 'forum',
-    Key: `${subForumId}/thumbnail.png`,
-  });
-
-  await sendCommand(contabo, command, 5);
+  await sendCommand(() =>
+    contabo.send(
+      new PutObjectCommand({
+        Body: optimizedImage,
+        Bucket: process.env.CB_BUCKET,
+        Key: `forum/${subForumId}/thumbnail.png`,
+      })
+    )
+  );
 
   const Key = generateKey(
     `${process.env.IMG_DOMAIN}/forum/${subForumId}/thumbnail.png`,
@@ -35,12 +37,14 @@ const UploadForumImage = async (
 };
 
 const DeleteSubForumImage = async (subForumId: number) => {
-  const command = new DeleteObjectCommand({
-    Bucket: 'forum',
-    Key: `${subForumId}/thumbnail.png`,
-  });
-
-  return await sendCommand(contabo, command, 5);
+  return await sendCommand(() =>
+    contabo.send(
+      new DeleteObjectCommand({
+        Bucket: process.env.CB_BUCKET,
+        Key: `forum/${subForumId}/thumbnail.png`,
+      })
+    )
+  );
 };
 
-export { UploadForumImage, DeleteSubForumImage };
+export { DeleteSubForumImage, UploadForumImage };

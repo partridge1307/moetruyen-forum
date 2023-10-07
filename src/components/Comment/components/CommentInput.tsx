@@ -78,7 +78,7 @@ const CommentInput: FC<CommentInputProps> = ({
       return serverErrorToast();
     },
     onMutate: (payload) => {
-      const optimisticComment: ExtendedComment = {
+      const optimisticComment: ExtendedComment | ExtendedSubComment = {
         // @ts-expect-error
         id: crypto.randomUUID(),
         // @ts-expect-error
@@ -92,6 +92,7 @@ const CommentInput: FC<CommentInputProps> = ({
           color: session.user.color,
           image: session.user.image,
         },
+        isSending: true,
         ...(type === 'COMMENT' && {
           _count: {
             replies: 0,
@@ -100,20 +101,25 @@ const CommentInput: FC<CommentInputProps> = ({
       };
 
       type === 'COMMENT'
-        ? setComments((prev) => [optimisticComment, ...prev])
-        : setComments((prev) => [...prev, optimisticComment]);
+        ? setComments((prev) => [optimisticComment as ExtendedComment, ...prev])
+        : setComments((prev) => [
+            ...prev,
+            optimisticComment as ExtendedSubComment,
+          ]);
     },
     onSuccess: (id) => {
       type === 'COMMENT'
         ? setComments((prev) => {
             const firstComment = prev[0];
             firstComment.id = id;
+            firstComment.isSending = false;
 
             return [firstComment, ...prev.slice(1)];
           })
         : setComments((prev) => {
             const lastComment = prev[prev.length - 1];
             lastComment.id = id;
+            lastComment.isSending = false;
 
             return [...prev.slice(0, -1), lastComment];
           });

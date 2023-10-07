@@ -3,7 +3,7 @@
 import UserAvatar from '@/components/User/UserAvatar';
 import Username from '@/components/User/Username';
 import { useSubComments } from '@/hooks/use-sub-comment';
-import { formatTimeToNow } from '@/lib/utils';
+import { cn, formatTimeToNow } from '@/lib/utils';
 import { usePrevious } from '@mantine/hooks';
 import type { PostComment, PostVote, User } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
@@ -31,6 +31,7 @@ export type ExtendedSubComment = Pick<
 > & {
   creator: Pick<User, 'name' | 'image' | 'color'>;
   votes: PostVote[];
+  isSending?: boolean;
 };
 
 interface SubCommentProps {
@@ -61,7 +62,12 @@ const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
       <ul className="space-y-6 mb-10">
         {!!subComments.length &&
           subComments.map((subComment) => (
-            <li key={subComment.id} className="flex gap-4">
+            <li
+              key={subComment.id}
+              className={cn('flex gap-4', {
+                'opacity-70': subComment.isSending,
+              })}
+            >
               <UserAvatar user={subComment.creator} />
 
               <div className="space-y-1">
@@ -91,6 +97,7 @@ const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
                   <div className="flex items-center gap-4">
                     {!!session && (
                       <CommentVote
+                        isSending={subComment.isSending}
                         commentId={subComment.id}
                         votes={subComment.votes}
                         sessionUserId={session.user.id}
@@ -100,6 +107,7 @@ const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
                     {(session?.user.id === subComment.creatorId ||
                       isManager) && (
                       <DeleteComment
+                        isSending={subComment.isSending}
                         type="SUB_COMMENT"
                         commentId={subComment.id}
                         APIQuery={`/api/comment/${subComment.id}`}

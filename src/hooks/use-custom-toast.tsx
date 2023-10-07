@@ -1,6 +1,7 @@
 import { buttonVariants } from '@/components/ui/Button';
 import { toast } from './use-toast';
 import { cn } from '@/lib/utils';
+import { mainURL } from '@/config';
 
 export const useCustomToast = () => {
   const loginToast = () => {
@@ -44,7 +45,7 @@ export const useCustomToast = () => {
       action: (
         <a
           target="_blank"
-          href="/verify-request"
+          href={`${mainURL}/user-verify`}
           className={cn(buttonVariants(), 'p-2')}
           onClick={() => dismiss()}
         >

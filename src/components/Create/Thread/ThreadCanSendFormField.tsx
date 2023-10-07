@@ -8,7 +8,6 @@ import {
 import { Label } from '@/components/ui/Label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/RadioGroup';
 import {
-  CreateThreadValidator,
   type CreateThreadPayload,
   type EditThreadPayload,
 } from '@/lib/validators/forum';

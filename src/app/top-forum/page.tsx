@@ -62,16 +62,16 @@ const page: FC<pageProps> = async ({ searchParams }) => {
   ]);
 
   return (
-    <main className="containter mx-auto w-4/5 space-y-10">
+    <main className="container max-sm:px-2 lg:w-4/5 space-y-10">
       <h1 className="text-xl font-semibold">Top Forum</h1>
 
-      <section className="grid grid-cols-2 gap-4 rounded-md dark:bg-zinc-900/60">
+      <section className="grid md:grid-cols-2 gap-4 rounded-md dark:bg-zinc-900/60">
         {!!subForums.length ? (
           subForums.map((sub) => (
             <Link
               key={sub.id}
               href={`/${sub.slug}`}
-              className="grid grid-cols-[.3fr_1fr] gap-4 p-2 rounded-md transition-colors hover:dark:bg-zinc-900/80"
+              className="grid grid-cols-[.5fr_1fr] gap-4 p-2 rounded-md transition-colors hover:dark:bg-zinc-900"
             >
               {!!sub.banner && (
                 <div className="relative aspect-video">

@@ -134,7 +134,7 @@ const Edit: FC<EditProps> = ({ subForum }) => {
             type="submit"
             className="px-6"
           >
-            Tạo
+            Sửa
           </Button>
         </div>
       </form>

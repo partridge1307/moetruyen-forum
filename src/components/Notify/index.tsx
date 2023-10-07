@@ -1,166 +1,119 @@
 'use client';
 
-import Follow from '@/components/Notify/Follow';
-import General from '@/components/Notify/General';
-import System from '@/components/Notify/System';
-import { Button } from '@/components/ui/Button';
+import { useNotify } from '@/hooks/use-notify';
+import type { Notify } from '@prisma/client';
+import { Bell, Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from '@/components/ui/DropdownMenu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { INFINITE_SCROLL_PAGINATION_RESULTS } from '@/config';
-import type { Notify } from '@prisma/client';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { Bell } from 'lucide-react';
-import type { Session } from 'next-auth';
-import { useEffect, useState } from 'react';
+} from '../ui/DropdownMenu';
+import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs';
+import GeneralNoti from './General';
+
+const SystemNoti = dynamic(() => import('./System'), { ssr: false });
+const FollowNoti = dynamic(() => import('./Follow'), { ssr: false });
+const NotifyControll = dynamic(() => import('./NotifyControll'), {
+  ssr: false,
+});
 
 export type ExtendedNotify = Pick<
   Notify,
   'id' | 'type' | 'createdAt' | 'content' | 'endPoint' | 'isRead'
 >;
 
-const Notifications = ({ session }: { session: Session }) => {
-  const [generalNotify, setGeneralNotify] = useState<ExtendedNotify[]>([]);
-  const [followNotify, setFollowNotify] = useState<ExtendedNotify[]>([]);
-  const [systemNotify, setSystemNotify] = useState<ExtendedNotify[]>([]);
-
-  const {
-    data: notifyData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-  } = useInfiniteQuery(
-    ['notify-infinite-query'],
-    async ({ pageParam }) => {
-      let query = `/api/notify?limit=${INFINITE_SCROLL_PAGINATION_RESULTS}`;
-      if (pageParam) {
-        query = `/api/notify?limit=${INFINITE_SCROLL_PAGINATION_RESULTS}&cursor=${pageParam}`;
-      }
-
-      const { data } = await axios.get(query);
-      return data as { notifications: ExtendedNotify[]; lastCursor: number };
-    },
-    {
-      getNextPageParam: (lastPage) => {
-        return lastPage.lastCursor ?? false;
-      },
-      refetchInterval: 5000,
-    }
-  );
-
-  useEffect(() => {
-    const notifies = notifyData?.pages.flatMap((page) => page.notifications);
-
-    if (notifies) {
-      const general = notifies.filter(
-        (notify) => notify.type === 'COMMENT' || notify.type === 'CHAT'
-      );
-      const follow = notifies.filter((notify) => notify.type === 'FOLLOW');
-      const system = notifies.filter((notify) => notify.type === 'SYSTEM');
-
-      setGeneralNotify(general);
-      setFollowNotify(follow);
-      setSystemNotify(system);
-    }
-  }, [notifyData?.pages]);
+const Notifications = () => {
+  const { notifies, hasNextPage, isFetchingNextPage, fetchNextPage } =
+    useNotify<ExtendedNotify>();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
-        <div className="relative">
+      <DropdownMenuTrigger asChild>
+        <button type="button" aria-label="Notify button" className="relative">
           <Bell aria-label="Notify button" className="w-7 h-7" />
-          {(!!generalNotify.some((notify) => !notify.isRead) ||
-            !!followNotify.some((notify) => !notify.isRead)) && (
-            <span className="absolute w-3 h-3 rounded-full top-0 right-0 animate-pulse dark:bg-red-600" />
+
+          {notifies.some((noti) => !noti.isRead) && (
+            <span className="absolute w-2 h-2 rounded-full top-0 right-0 animate-ping dark:bg-red-500" />
           )}
-        </div>
+        </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        className="dark:bg-zinc-800 p-1 space-y-2"
+        avoidCollisions
+        className="space-y-1.5 dark:bg-zinc-900"
       >
-        <DropdownMenuLabel className="text-center text-lg dark:text-white">
-          Thông báo
-        </DropdownMenuLabel>
+        <DropdownMenuLabel className="text-base">Thông báo</DropdownMenuLabel>
 
-        {(!!generalNotify.length ||
-          !!followNotify.length ||
-          !!systemNotify.length) && (
-          <Button
-            size={'sm'}
-            variant={'destructive'}
-            className="w-full"
-            onClick={() =>
-              fetch(`/api/notify`, { method: 'DELETE' }).then(() => refetch())
-            }
-          >
-            Xóa
-          </Button>
-        )}
+        {!!notifies.length && <NotifyControll />}
 
-        <Tabs defaultValue="general">
-          <TabsList className="dark:bg-zinc-900 grid grid-cols-3 gap-2">
-            <TabsTrigger value="general" className="relative">
-              Chung
-              {!!generalNotify.some((notify) => !notify.isRead) && (
-                <span className="absolute w-3 h-3 rounded-full top-0 right-0 animate-pulse dark:bg-red-600" />
+        <Tabs defaultValue="GENERAL" className="relative w-72 md:w-96">
+          <TabsList className="w-full justify-between gap-2">
+            <TabsTrigger
+              value="GENERAL"
+              className="space-x-2 duration-500 data-[state=active]:flex-1 data-[state=inactive]:px-4"
+            >
+              <span>Chung</span>
+
+              {notifies.some(
+                (noti) => noti.type === 'GENERAL' && !noti.isRead
+              ) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
               )}
             </TabsTrigger>
-            <TabsTrigger value="follow" className="relative">
-              Theo dõi
-              {!!followNotify.some((notify) => !notify.isRead) && (
-                <span className="absolute w-3 h-3 rounded-full top-0 right-0 animate-pulse dark:bg-red-600" />
+
+            <TabsTrigger
+              value="FOLLOW"
+              className="space-x-2 duration-500 data-[state=active]:flex-1 data-[state=inactive]:px-4"
+            >
+              <span>Theo dõi</span>
+
+              {notifies.some(
+                (noti) => noti.type === 'FOLLOW' && !noti.isRead
+              ) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
               )}
             </TabsTrigger>
-            <TabsTrigger value="system" className="relative">
-              Hệ thống
-              {!!systemNotify.some((notify) => !notify.isRead) && (
-                <span className="absolute w-3 h-3 rounded-full top-0 right-0 animate-pulse dark:bg-red-600" />
+            <TabsTrigger
+              value="SYSTEM"
+              className="space-x-2 duration-500 data-[state=active]:flex-1 data-[state=inactive]:px-4"
+            >
+              <span>Hệ thống</span>
+
+              {notifies.some(
+                (noti) => noti.type === 'SYSTEM' && !noti.isRead
+              ) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
               )}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent
-            value="general"
-            className="max-h-72 overflow-auto space-y-2 scrollbar dark:scrollbar--dark"
-          >
-            <General generalNotify={generalNotify} />
-          </TabsContent>
+          <GeneralNoti
+            notifies={notifies.filter((noti) => noti.type === 'GENERAL')}
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+          />
 
-          <TabsContent
-            value="follow"
-            className="max-h-72 overflow-auto space-y-2 scrollbar dark:scrollbar--dark"
-          >
-            <Follow followNotify={followNotify} />
-          </TabsContent>
+          <FollowNoti
+            notifies={notifies.filter((noti) => noti.type === 'FOLLOW')}
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+          />
 
-          <TabsContent
-            value="system"
-            className="max-h-72 overflow-auto space-y-2 scrollbar dark:scrollbar--dark"
-          >
-            <System systemNotify={systemNotify} />
-          </TabsContent>
+          <SystemNoti
+            notifies={notifies.filter((noti) => noti.type === 'SYSTEM')}
+            hasNextPage={hasNextPage}
+            fetchNextPage={fetchNextPage}
+          />
         </Tabs>
-        <Button
-          disabled={!hasNextPage}
-          isLoading={isFetchingNextPage}
-          onClick={() => {
-            refetch();
-            fetchNextPage();
-          }}
-          className="w-full"
-          variant={'ghost'}
-          size={'sm'}
-        >
-          Tải thêm
-        </Button>
+
+        {isFetchingNextPage && (
+          <p className="flex justify-center">
+            <Loader2 className="w-6 h-6 animate-spin" />
+          </p>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

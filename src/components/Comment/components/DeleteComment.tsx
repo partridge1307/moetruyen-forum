@@ -23,6 +23,7 @@ import { ExtendedSubComment } from '../SubComment';
 type DeleteCommentProps = {
   commentId: number;
   APIQuery: string;
+  isSending?: boolean;
 } & (
   | {
       type: 'COMMENT';
@@ -37,6 +38,7 @@ type DeleteCommentProps = {
 const DeleteComment: FC<DeleteCommentProps> = ({
   type,
   commentId,
+  isSending,
   APIQuery,
   setComments,
 }) => {
@@ -69,7 +71,7 @@ const DeleteComment: FC<DeleteCommentProps> = ({
   return (
     <AlertDialog>
       <AlertDialogTrigger
-        disabled={isDeleting}
+        disabled={isDeleting || isSending}
         className="hover:bg-red-500 text-red-500 hover:text-white transition-colors p-2 rounded-md"
       >
         {isDeleting ? (

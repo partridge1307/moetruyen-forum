@@ -11,12 +11,14 @@ interface CommentVoteProps {
   commentId: number;
   votes: PostVote[];
   sessionUserId?: string;
+  isSending?: boolean;
 }
 
 const CommentVote: FC<CommentVoteProps> = ({
   commentId,
   votes,
   sessionUserId,
+  isSending,
 }) => {
   const initialVoteAmt = votes.reduce((acc, vote) => {
     if (vote.type === 'UP_VOTE') return acc + 1;
@@ -35,6 +37,7 @@ const CommentVote: FC<CommentVoteProps> = ({
   return (
     <div className="flex items-center gap-1">
       <Button
+        disabled={isSending}
         onClick={() => Vote('UP_VOTE')}
         variant={'ghost'}
         size={'sm'}
@@ -49,6 +52,7 @@ const CommentVote: FC<CommentVoteProps> = ({
       <span>{voteAmt}</span>
 
       <Button
+        disabled={isSending}
         onClick={() => Vote('DOWN_VOTE')}
         variant={'ghost'}
         size={'sm'}

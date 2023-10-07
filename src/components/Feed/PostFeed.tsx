@@ -166,7 +166,7 @@ const PostFeed: FC<PostFeedProps> = ({ subForumId, initialPosts, session }) => {
             }
           })
         ) : (
-          <li>Không có bài viết</li>
+          <li className="p-2">Không có bài viết</li>
         )}
       </ul>
 
