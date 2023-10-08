@@ -31,7 +31,7 @@ const useNotify = <TData>() => {
     }
   }, [query.data?.pages]);
 
-  return { notifies, ...query };
+  return { notifies, setNotifies, ...query };
 };
 
 export { useNotify };

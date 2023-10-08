@@ -1,23 +1,24 @@
 'use client';
 
-import { FC } from 'react';
-import { Button } from '../ui/Button';
-import { CheckCheck, Trash2 } from 'lucide-react';
+import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
-import { useCustomToast } from '@/hooks/use-custom-toast';
-import { useRouter } from 'next/navigation';
+import { CheckCheck, Trash2 } from 'lucide-react';
+import type { Dispatch, FC, SetStateAction } from 'react';
+import { ExtendedNotify } from '.';
+import { Button } from '../ui/Button';
 
-interface NotifyControllProps {}
+interface NotifyControllProps {
+  setNotifies: Dispatch<SetStateAction<ExtendedNotify[]>>;
+}
 
-const NotifyControll: FC<NotifyControllProps> = ({}) => {
+const NotifyControll: FC<NotifyControllProps> = ({ setNotifies }) => {
   const { loginToast, serverErrorToast, successToast } = useCustomToast();
-  const router = useRouter();
 
   const { mutate: CheckAll, isLoading: isChecking } = useMutation({
     mutationKey: ['notify-read-all'],
     mutationFn: async () => {
-      await axios.patch('/api/notify');
+      await axios.put('/api/notify');
     },
     onError: (err) => {
       if (err instanceof AxiosError) {
@@ -27,7 +28,13 @@ const NotifyControll: FC<NotifyControllProps> = ({}) => {
       return serverErrorToast();
     },
     onSuccess: () => {
-      router.refresh();
+      setNotifies((notifies) =>
+        notifies.map((notify) => {
+          notify.isRead = true;
+
+          return notify;
+        })
+      );
 
       return successToast();
     },
@@ -46,7 +53,7 @@ const NotifyControll: FC<NotifyControllProps> = ({}) => {
       return serverErrorToast();
     },
     onSuccess: () => {
-      router.refresh();
+      setNotifies([]);
 
       return successToast();
     },

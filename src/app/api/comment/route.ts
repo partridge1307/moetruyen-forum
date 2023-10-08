@@ -47,7 +47,7 @@ export async function POST(req: Request) {
           }),
           db.notify.create({
             data: {
-              type: 'COMMENT',
+              type: 'GENERAL',
               toUserId: targetComment.creatorId,
               content: `${session.user.name} vừa phản hồi bình luận của bạn trong Forum`,
               endPoint: `${process.env.NEXTAUTH_URL}/${targetComment.post.subForum.slug}/${targetComment.postId}`,

@@ -25,8 +25,13 @@ export type ExtendedNotify = Pick<
 >;
 
 const Notifications = () => {
-  const { notifies, hasNextPage, isFetchingNextPage, fetchNextPage } =
-    useNotify<ExtendedNotify>();
+  const {
+    notifies,
+    setNotifies,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useNotify<ExtendedNotify>();
 
   return (
     <DropdownMenu>
@@ -47,7 +52,7 @@ const Notifications = () => {
       >
         <DropdownMenuLabel className="text-base">Thông báo</DropdownMenuLabel>
 
-        {!!notifies.length && <NotifyControll />}
+        {!!notifies.length && <NotifyControll setNotifies={setNotifies} />}
 
         <Tabs defaultValue="GENERAL" className="relative w-72 md:w-96">
           <TabsList className="w-full justify-between gap-2">

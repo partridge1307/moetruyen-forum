@@ -1,11 +1,10 @@
-import { Bell, FacebookIcon, Menu } from 'lucide-react';
+import { getAuthSession } from '@/lib/auth';
+import { Bell, Menu, Search as SearchIcon } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import UserDropdown from '../Auth/UserDropdown';
 import { Icons } from '../Icons';
 import ThemeChangeClient from '../ThemeChangeClient';
-import { Search as SearchIcon } from 'lucide-react';
-import { getAuthSession } from '@/lib/auth';
 
 const Sidebar = dynamic(() => import('./Sidebar'), {
   loading: () => (
@@ -53,7 +52,7 @@ const Navbar = async () => {
           <div className="flex items-center gap-3 lg:gap-8">
             <Search />
 
-            {!!session && <Notify session={session} />}
+            {!!session && <Notify />}
 
             <UserDropdown />
           </div>
