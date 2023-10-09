@@ -164,22 +164,42 @@ export async function POST(req: Request) {
       return new Response('Existing slug', { status: 400 });
     }
 
-    const [, createdSubForum] = await db.$transaction([
-      db.user.findUniqueOrThrow({
-        where: {
-          id: session.user.id,
-          verified: true,
+    const user = await db.user.findUniqueOrThrow({
+      where: {
+        id: session.user.id,
+      },
+      select: {
+        verified: true,
+        createdAt: true,
+        _count: {
+          select: {
+            manga: true,
+          },
         },
-      }),
-      db.subForum.create({
-        data: {
-          slug: randomUUID(),
-          title,
-          creatorId: session.user.id,
-          canSend: canSend === 'true' ? true : false,
-        },
-      }),
-    ]);
+      },
+    });
+
+    const createdAt = user.createdAt;
+    createdAt.setDate(createdAt.getDate() + 7);
+
+    if (
+      createdAt.getTime() >= new Date().getTime() ||
+      !user.verified ||
+      user._count.manga < 3
+    ) {
+      return new Response('Not enough condition', {
+        status: 409,
+      });
+    }
+
+    const createdSubForum = await db.subForum.create({
+      data: {
+        slug: randomUUID(),
+        title,
+        creatorId: session.user.id,
+        canSend: canSend === 'true' ? true : false,
+      },
+    });
 
     const subForumSlug =
       slug?.trim() ??

@@ -73,6 +73,12 @@ const Thread = () => {
             description: 'Đã tồn tại Slug này rồi',
             variant: 'destructive',
           });
+        if (err.response?.status === 409)
+          return toast({
+            title: 'Chưa đủ điều kiện',
+            description: 'Tài khoản chưa đủ điều kiện tạo Forum',
+            variant: 'destructive',
+          });
       }
 
       return serverErrorToast();
