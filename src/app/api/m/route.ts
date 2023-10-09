@@ -4,8 +4,8 @@ import { db } from '@/lib/db';
 import { normalizeText } from '@/lib/utils';
 import { CreateThreadFormValidator } from '@/lib/validators/forum';
 import { Prisma } from '@prisma/client';
-import { ZodError, z } from 'zod';
 import { randomUUID } from 'crypto';
+import { ZodError, z } from 'zod';
 
 const PostValidator = z.object({
   limit: z.string(),
@@ -52,7 +52,7 @@ export async function GET(req: Request) {
       sortBy: url.searchParams.get('sortBy'),
     });
 
-    const orderBy: Prisma.PostOrderByWithRelationInput =
+    const orderBy: Prisma.PostOrderByWithRelationAndSearchRelevanceInput =
       sortBy === 'hot' ? { votes: { _count: 'desc' } } : { createdAt: sortBy };
     const whereClause: Prisma.PostWhereInput = session
       ? { subForum: { id: { in: followedSubForumIds } } }
