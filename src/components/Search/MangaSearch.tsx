@@ -1,13 +1,11 @@
 import { mainURL } from '@/config';
-import type { Manga, MangaAuthor } from '@prisma/client';
+import type { Manga } from '@prisma/client';
 import Image from 'next/image';
 import { FC } from 'react';
 import { SheetClose } from '../ui/Sheet';
 
 interface MangaSearchProps {
-  mangas?: (Pick<Manga, 'id' | 'slug' | 'image' | 'name' | 'review'> & {
-    author: Pick<MangaAuthor, 'name'>[];
-  })[];
+  mangas?: Pick<Manga, 'id' | 'slug' | 'image' | 'name' | 'review'>[];
 }
 
 const MangaSearch: FC<MangaSearchProps> = ({ mangas }) => {
@@ -31,11 +29,8 @@ const MangaSearch: FC<MangaSearchProps> = ({ mangas }) => {
               />
             </div>
 
-            <div>
-              <h1 className="text-lg lg:text-xl font-semibold">{manga.name}</h1>
-              <p className="line-clamp-1">
-                {manga.author.map((author) => author.name).join(', ')}
-              </p>
+            <div className="space-y-1.5">
+              <p className="text-lg lg:text-xl font-semibold">{manga.name}</p>
               <p className="line-clamp-2">{manga.review}</p>
             </div>
           </SheetClose>

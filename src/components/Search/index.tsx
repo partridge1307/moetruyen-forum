@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { mainURL } from '@/config';
 import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useDebouncedValue } from '@mantine/hooks';
-import type { Manga, MangaAuthor, SubForum, User } from '@prisma/client';
+import type { Manga, SubForum, User } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { Search as SearchIcon } from 'lucide-react';
@@ -28,9 +28,7 @@ const SearchSkeleton = dynamic(
 );
 
 export type SearchData = {
-  mangas: (Pick<Manga, 'id' | 'slug' | 'image' | 'name' | 'review'> & {
-    author: Pick<MangaAuthor, 'name'>[];
-  })[];
+  mangas: Pick<Manga, 'id' | 'slug' | 'image' | 'name' | 'review'>[];
   users: Pick<User, 'name' | 'color' | 'image'>[];
   forums: Pick<SubForum, 'title' | 'slug' | 'banner'>[];
 };

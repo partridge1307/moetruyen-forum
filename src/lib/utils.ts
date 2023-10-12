@@ -143,3 +143,12 @@ export const shuffeArray = <T>(array: T[]) => {
 
   return arr;
 };
+
+const tsquerySpecialChars = /[()|&:*!]/g;
+export const generateSearchPhrase = (searchPhrase: string) =>
+  searchPhrase
+    .replace(tsquerySpecialChars, ' ')
+    .trim()
+    .split(/\s+/)
+    .map((phrase) => `${phrase}:*`)
+    .join(' | ');
