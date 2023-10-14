@@ -8,7 +8,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/Dialog';
-import { serverDomain } from '@/config';
 import { cn } from '@/lib/utils';
 import { useClipboard } from '@mantine/hooks';
 import { Check, Copy, Facebook, Share2 } from 'lucide-react';
@@ -43,7 +42,7 @@ const ShareButton: FC<PostShareButtonProps> = ({ url, title }) => {
           <div className="flex flex-wrap justify-between lg:justify-start items-center gap-2">
             {/* Facebook */}
             <FacebookShareButton
-              url={`${serverDomain}${url}`}
+              url={`${process.env.NEXT_PUBLIC_URL}${url}`}
               quote={title}
               hashtag="#Moetruyen"
               blankTarget
@@ -52,7 +51,7 @@ const ShareButton: FC<PostShareButtonProps> = ({ url, title }) => {
             </FacebookShareButton>
             {/* Twitter */}
             <TwitterShareButton
-              url={`${serverDomain}${url}`}
+              url={`${process.env.NEXT_PUBLIC_URL}${url}`}
               title={title}
               hashtags={['Moetruyen', `${title.split(' ').join('')}`]}
               blankTarget
@@ -61,14 +60,14 @@ const ShareButton: FC<PostShareButtonProps> = ({ url, title }) => {
             </TwitterShareButton>
             {/* Telegram */}
             <TelegramShareButton
-              url={`${serverDomain}${url}`}
+              url={`${process.env.NEXT_PUBLIC_URL}${url}`}
               title={title}
               blankTarget
             >
               <TelegramIcon size={'2rem'} round />
             </TelegramShareButton>
             <RedditShareButton
-              url={`${serverDomain}${url}`}
+              url={`${process.env.NEXT_PUBLIC_URL}${url}`}
               title={title}
               blankTarget
             >
@@ -78,10 +77,14 @@ const ShareButton: FC<PostShareButtonProps> = ({ url, title }) => {
 
           <div className="grid grid-cols-[1fr_.1fr] items-center gap-2">
             <p className="truncate p-2 rounded-md dark:bg-zinc-800">
-              {serverDomain}
+              {process.env.NEXT_PUBLIC_URL}
               {url}
             </p>
-            <Button onClick={() => clipboard.copy(`${serverDomain}${url}`)}>
+            <Button
+              onClick={() =>
+                clipboard.copy(`${process.env.NEXT_PUBLIC_URL}${url}`)
+              }
+            >
               {clipboard.copied ? (
                 <Check className="w-6 h-6" />
               ) : (

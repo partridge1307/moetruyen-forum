@@ -43,7 +43,7 @@ const UserDropdown = async () => {
             </div>
 
             <a
-              href={process.env.MANAGE_URL}
+              href={process.env.NEXT_PUBLIC_MANAGE_URL}
               target="_blank"
               className={cn(buttonVariants(), 'w-full')}
             >

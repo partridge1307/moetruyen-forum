@@ -1,4 +1,3 @@
-import { mainURL } from '@/config';
 import type { Manga } from '@prisma/client';
 import Image from 'next/image';
 import { FC } from 'react';
@@ -15,7 +14,7 @@ const MangaSearch: FC<MangaSearchProps> = ({ mangas }) => {
         <a
           target="_blank"
           key={manga.id}
-          href={`${mainURL}/manga/${manga.slug}`}
+          href={`${process.env.NEXT_PUBLIC_MAIN_URL}/manga/${manga.slug}`}
         >
           <SheetClose className="w-full text-start grid grid-cols-[.5fr_1fr] lg:grid-cols-[.1fr_1fr] gap-4 p-2 rounded-md transition-colors hover:dark:bg-zinc-800">
             <div className="relative" style={{ aspectRatio: 4 / 3 }}>

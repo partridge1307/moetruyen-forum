@@ -48,7 +48,7 @@ export const authOptionsWrapper = (
             domain:
               HOST_URL.hostname === 'localhost'
                 ? HOST_URL.hostname
-                : `.${new URL(process.env.MAIN_URL!).host}`,
+                : `.${new URL(process.env.NEXT_PUBLIC_MAIN_URL!).host}`,
             secure: useSecureCookies,
           },
         },
@@ -80,7 +80,7 @@ export const authOptionsWrapper = (
                   domain:
                     HOST_URL.hostname === 'localhost'
                       ? HOST_URL.hostname
-                      : `.${new URL(process.env.MAIN_URL!).host}`,
+                      : `.${new URL(process.env.NEXT_PUBLIC_MAIN_URL!).host}`,
                   secure: useSecureCookies,
                 }
               );

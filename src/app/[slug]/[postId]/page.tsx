@@ -186,9 +186,9 @@ const page: FC<pageProps> = async ({ params }) => {
             <div className="space-y-2">
               <div className="text-sm flex items-center gap-1">
                 <a
-                  href={`${process.env.MAIN_URL}/user/${post.author.name
-                    ?.split(' ')
-                    .join('-')}`}
+                  href={`${
+                    process.env.NEXT_PUBLIC_MAIN_URL
+                  }/user/${post.author.name?.split(' ').join('-')}`}
                   target="_blank"
                 >
                   <Username user={post.author} className="text-start" />

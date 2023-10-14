@@ -53,7 +53,7 @@ const Sidebar = async () => {
 
           <section className="space-y-10">
             <a
-              href={process.env.MAIN_URL!}
+              href={process.env.NEXT_PUBLIC_MAIN_URL!}
               className="flex justify-center items-center space-x-2 p-2 font-semibold text-lg rounded-md dark:bg-zinc-800"
             >
               <Home className="w-5 h-5" />
@@ -102,7 +102,7 @@ const Sidebar = async () => {
         <footer className="p-2 pt-0 divide-y dark:divide-zinc-700 dark:bg-zinc-800">
           <a
             target="_blank"
-            href={`${process.env.MAIN_URL!}/social`}
+            href={`${process.env.NEXT_PUBLIC_MAIN_URL!}/social`}
             aria-label="Moetruyen social button"
             className={cn(
               buttonVariants({ variant: 'link' }),

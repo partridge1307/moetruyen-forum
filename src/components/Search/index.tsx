@@ -1,7 +1,6 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { mainURL } from '@/config';
 import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useDebouncedValue } from '@mantine/hooks';
 import type { Manga, SubForum, User } from '@prisma/client';
@@ -87,7 +86,9 @@ const Index = () => {
           onSubmit={(e) => {
             e.preventDefault();
 
-            router.push(`${mainURL}/search?q=${query}`);
+            router.push(
+              `${process.env.NEXT_PUBLIC_MAIN_URL}/search?q=${query}`
+            );
 
             const target = document.getElementById('sheet-close-button');
             target?.click();
