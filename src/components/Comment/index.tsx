@@ -81,13 +81,19 @@ const Comments = ({ id, session }: CommentProps) => {
       ) : (
         <p className="mt-4">
           Vui lòng{' '}
-          <Link href="/sign-in" className="font-semibold">
+          <a
+            href={`${process.env.NEXT_PUBLIC_MAIN_URL}/sign-in`}
+            className="font-semibold"
+          >
             đăng nhập
-          </Link>{' '}
+          </a>{' '}
           hoặc{' '}
-          <Link href="/sign-up" className="font-semibold">
+          <a
+            href={`${process.env.NEXT_PUBLIC_MAIN_URL}/sign-up`}
+            className="font-semibold"
+          >
             đăng ký
-          </Link>{' '}
+          </a>{' '}
           để bình luận
         </p>
       )}

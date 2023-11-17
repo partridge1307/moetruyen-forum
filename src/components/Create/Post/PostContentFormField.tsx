@@ -42,6 +42,7 @@ const PostContentFormField: FC<PostContentFormFieldProps> = ({
           <FormMessage />
           <FormControl>
             <MoetruyenEditor
+              className="h-20 overflow-y-auto scrollbar dark:scrollbar--dark"
               editorRef={editorRef}
               placeholder="Nhập nội dung"
               initialContent={initialContent}

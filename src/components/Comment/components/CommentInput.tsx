@@ -100,7 +100,10 @@ function CommentInput<TData>({
 
   return (
     <div className="mt-4 space-y-2">
-      <MoetruyenEditor editorRef={editorRef} />
+      <MoetruyenEditor
+        editorRef={editorRef}
+        className="h-32 overflow-y-auto scrollbar dark:scrollbar--dark"
+      />
       <Button
         disabled={!hasText || isUploading || isFetching}
         isLoading={isUploading || isFetching}

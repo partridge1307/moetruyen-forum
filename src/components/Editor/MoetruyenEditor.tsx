@@ -29,6 +29,7 @@ import MentionsPlugin from './plugins/Mention';
 import TiktokPlugin from './plugins/Tiktok';
 import Toolbar from './plugins/Toolbar';
 import YouTubePlugin from './plugins/Youtube';
+import { cn } from '@/lib/utils';
 
 function onError(error: Error): void {
   // eslint-disable-next-line no-console
@@ -43,6 +44,7 @@ const editorConfig: InitialConfigType = {
 };
 
 interface EditorProps {
+  className?: string;
   placeholder?: string;
   maxLength?: number;
   initialContent?: JSON | Prisma.JsonValue;
@@ -52,6 +54,7 @@ interface EditorProps {
 }
 
 const Editor = ({
+  className,
   placeholder = 'Nói lên cảm nghĩ của bạn...',
   maxLength = 1024,
   initialContent,
@@ -70,7 +73,12 @@ const Editor = ({
       <div className="moetruyen-editor-inner">
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="moetruyen-editor-input bg-background rounded-lg focus:ring-1 focus-visible:ring-offset-1" />
+            <ContentEditable
+              className={cn(
+                'moetruyen-editor-input bg-background rounded-lg focus:ring-1 focus-visible:ring-offset-1',
+                className
+              )}
+            />
           }
           placeholder={
             <div className="moetruyen-placeholder text-muted-foreground">
