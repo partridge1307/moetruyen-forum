@@ -55,6 +55,7 @@ const page: FC<pageProps> = async ({ params }) => {
         subForum: {
           select: {
             slug: true,
+            title: true,
           },
         },
         votes: true,
