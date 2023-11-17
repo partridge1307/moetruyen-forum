@@ -41,6 +41,7 @@ import {
 } from 'lexical';
 import {
   AlignCenter,
+  AlignJustify,
   AlignLeft,
   AlignRight,
   Bold,
@@ -53,7 +54,7 @@ import {
   Underline,
   Undo,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ImageInputBody } from '../Image';
 import { FloatingLinkEditor, getSelectedNode } from '../Link';
@@ -68,6 +69,13 @@ const blockTypeToBlockName = {
   number: 'Numbered List',
 };
 
+const alignType = {
+  left: 'left',
+  center: 'center',
+  right: 'right',
+  justify: 'justify',
+};
+
 const Toolbar = () => {
   const [editor] = useLexicalComposerContext();
 
@@ -79,6 +87,12 @@ const Toolbar = () => {
   const [linkInput, setLinkInput] = useState<string>('');
   const [isLink, setIsLink] = useState<boolean>(false);
   const [isLinkDisabled, setIsLinkDisabled] = useState<boolean>(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const mouseCoords = useRef({
+    startX: 0,
+    scrollLeft: 0,
+  });
 
   const updateToolbar = useCallback(() => {
     const selection = $getSelection();
@@ -185,9 +199,43 @@ const Toolbar = () => {
     [editor, isLink]
   );
 
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    if (!toolbarRef.current) return;
+
+    const startX = e.pageX - toolbarRef.current.offsetLeft;
+    mouseCoords.current = { startX, scrollLeft: toolbarRef.current.scrollLeft };
+    setIsDragging(true);
+  }, []);
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+  const handleDragging = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging || !toolbarRef.current) return;
+      e.preventDefault();
+
+      const x = e.pageX - toolbarRef.current.offsetLeft;
+      const walkX = (x - mouseCoords.current.startX) * 1.5;
+
+      toolbarRef.current.scrollLeft = mouseCoords.current.scrollLeft - walkX;
+    },
+    [isDragging]
+  );
+
   return (
-    <div className="overflow-auto flex justify-between gap-4 lg:gap-2">
-      <div className="flex items-center gap-2">
+    <div
+      ref={toolbarRef}
+      className="overflow-auto flex justify-between space-x-6 lg:gap-2 hide_scrollbar"
+      onMouseDown={handleDragStart}
+      onMouseUp={handleDragEnd}
+      onMouseLeave={handleDragEnd}
+      onMouseMove={handleDragging}
+    >
+      <div
+        className="flex items-center gap-2"
+        onMouseDown={handleDragStart}
+        onMouseUp={handleDragEnd}
+      >
         <div className="flex items-center gap-1">
           <button
             aria-label="bold format button"
@@ -281,7 +329,17 @@ const Toolbar = () => {
             </>
           )}
         </div>
-        <Select defaultValue={'left-align'}>
+        <Select
+          defaultValue={'left'}
+          onValueChange={(value) => {
+            if (value in alignType) {
+              editor.dispatchCommand(
+                FORMAT_ELEMENT_COMMAND,
+                value as keyof typeof alignType
+              );
+            }
+          }}
+        >
           <SelectTrigger
             aria-label="align button"
             type="button"
@@ -289,33 +347,46 @@ const Toolbar = () => {
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent onCloseAutoFocus={() => editor.focus()}>
             <SelectItem
-              value="left-align"
-              className="cursor-pointer"
-              onClick={() => {
-                editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left');
+              ref={(ref) => {
+                if (!ref) return;
+                ref.ontouchstart = (e) => e.preventDefault();
               }}
+              value="left"
+              className="cursor-pointer"
             >
               <AlignLeft className="w-8 h-8 md:w-5 md:h-5" />
             </SelectItem>
             <SelectItem
-              value="center-align"
-              className="cursor-pointer"
-              onClick={() => {
-                editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center');
+              ref={(ref) => {
+                if (!ref) return;
+                ref.ontouchstart = (e) => e.preventDefault();
               }}
+              value="center"
+              className="cursor-pointer"
             >
               <AlignCenter className="w-8 h-8 md:w-5 md:h-5" />
             </SelectItem>
             <SelectItem
-              value="right-align"
-              className="cursor-pointer"
-              onClick={() => {
-                editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right');
+              ref={(ref) => {
+                if (!ref) return;
+                ref.ontouchstart = (e) => e.preventDefault();
               }}
+              value="right"
+              className="cursor-pointer"
             >
               <AlignRight className="w-8 h-8 md:w-5 md:h-5" />
+            </SelectItem>
+            <SelectItem
+              ref={(ref) => {
+                if (!ref) return;
+                ref.ontouchstart = (e) => e.preventDefault();
+              }}
+              value="justify"
+              className="cursor-pointer"
+            >
+              <AlignJustify className="w-8 h-8 md:w-5 md:h-5" />
             </SelectItem>
           </SelectContent>
         </Select>

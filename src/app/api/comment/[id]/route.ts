@@ -8,85 +8,72 @@ const CommentValidator = z.object({
   cursor: z.string().nullish().optional(),
 });
 
+const getComments = ({
+  cursor,
+  limit,
+  postId,
+}: {
+  cursor?: number;
+  limit: number;
+  postId: number;
+}) => {
+  let paginationProps: Prisma.PostCommentFindManyArgs = {};
+  if (!!cursor) {
+    paginationProps.skip = 1;
+    paginationProps.cursor = {
+      id: cursor,
+    };
+  }
+
+  return db.postComment.findMany({
+    where: {
+      postId,
+      replyToId: null,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+    take: limit,
+    select: {
+      id: true,
+      content: true,
+      oEmbed: true,
+      createdAt: true,
+      votes: true,
+      creatorId: true,
+      creator: {
+        select: {
+          name: true,
+          color: true,
+          image: true,
+        },
+      },
+      _count: {
+        select: {
+          replies: true,
+        },
+      },
+    },
+    ...paginationProps,
+  });
+};
+
 export async function GET(req: Request, context: { params: { id: string } }) {
   try {
     const url = new URL(req.url);
 
-    const { limit, cursor: userCursor } = CommentValidator.parse({
+    const { cursor: userCursor, limit } = CommentValidator.parse({
       limit: url.searchParams.get('limit'),
       cursor: url.searchParams.get('cursor'),
     });
 
     const cursor = userCursor ? parseInt(userCursor) : undefined;
 
-    let comments;
-    if (cursor) {
-      comments = await db.postComment.findMany({
-        where: {
-          postId: +context.params.id,
-          replyToId: null,
-        },
-        select: {
-          id: true,
-          content: true,
-          oEmbed: true,
-          createdAt: true,
-          votes: true,
-          creatorId: true,
-          creator: {
-            select: {
-              name: true,
-              color: true,
-              image: true,
-            },
-          },
-          _count: {
-            select: {
-              replies: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: parseInt(limit),
-        skip: 1,
-        cursor: {
-          id: cursor,
-        },
-      });
-    } else {
-      comments = await db.postComment.findMany({
-        where: {
-          postId: +context.params.id,
-          replyToId: null,
-        },
-        select: {
-          id: true,
-          content: true,
-          oEmbed: true,
-          createdAt: true,
-          votes: true,
-          creatorId: true,
-          creator: {
-            select: {
-              name: true,
-              color: true,
-              image: true,
-            },
-          },
-          _count: {
-            select: {
-              replies: true,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: parseInt(limit),
-      });
-    }
+    const comments = await getComments({
+      cursor,
+      limit: parseInt(limit),
+      postId: +context.params.id,
+    });
 
     return new Response(
       JSON.stringify({
@@ -100,9 +87,6 @@ export async function GET(req: Request, context: { params: { id: string } }) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return new Response('Invalid', { status: 422 });
-    }
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      return new Response('Not found', { status: 404 });
     }
     return new Response('Something went wrong', { status: 500 });
   }
@@ -119,24 +103,8 @@ export async function DELETE(
     await db.$transaction([
       db.postComment.findUniqueOrThrow({
         where: {
+          creatorId: session.user.id,
           id: +context.params.id,
-          OR: [
-            {
-              creatorId: session.user.id,
-            },
-            {
-              post: {
-                subForum: {
-                  subscriptions: {
-                    some: {
-                      userId: session.user.id,
-                      isManager: true,
-                    },
-                  },
-                },
-              },
-            },
-          ],
         },
       }),
       db.postComment.delete({

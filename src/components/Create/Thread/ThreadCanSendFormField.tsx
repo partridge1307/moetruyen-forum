@@ -12,48 +12,16 @@ import {
   type EditThreadPayload,
 } from '@/lib/validators/forum';
 import { FC } from 'react';
-import { type UseFormReturn } from 'react-hook-form';
+import type { Control, UseFormReturn } from 'react-hook-form';
 
-type ThreadCanSendFieldProps =
-  | {
-      type: 'CREATE';
-      form: UseFormReturn<CreateThreadPayload>;
-    }
-  | { type: 'EDIT'; form: UseFormReturn<EditThreadPayload> };
+type ThreadCanSendFieldProps = {
+  form: UseFormReturn<CreateThreadPayload> | UseFormReturn<EditThreadPayload>;
+};
 
-const ThreadCanSendField: FC<ThreadCanSendFieldProps> = ({ type, form }) => {
-  return type === 'CREATE' ? (
+const ThreadCanSendField: FC<ThreadCanSendFieldProps> = ({ form }) => {
+  return (
     <FormField
-      control={form.control}
-      name="canSend"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Cho phép người khác đăng bài</FormLabel>
-          <FormControl>
-            <RadioGroup
-              className="flex flex-wrap items-center gap-10"
-              defaultValue={field.value ? 'true' : 'false'}
-              onValueChange={(value) =>
-                value === 'true' ? field.onChange(true) : field.onChange(false)
-              }
-            >
-              <div className="flex items-center gap-2">
-                <RadioGroupItem id="true" value="true" />
-                <Label htmlFor="true">Có</Label>
-              </div>
-              <div className="flex items-center gap-2">
-                <RadioGroupItem id="false" value="false" />
-                <Label htmlFor="false">Không</Label>
-              </div>
-            </RadioGroup>
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
-    />
-  ) : (
-    <FormField
-      control={form.control}
+      control={form.control as Control<CreateThreadPayload | EditThreadPayload>}
       name="canSend"
       render={({ field }) => (
         <FormItem>

@@ -4,17 +4,19 @@ import { VoteValidator } from '@/lib/validators/vote';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 
-export async function PATCH(req: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getAuthSession();
     if (!session) return new Response('Unauthorized', { status: 401 });
 
     const { id, voteType } = VoteValidator.parse(await req.json());
 
-    const existingVote = await db.postVote.findFirst({
+    const existingVote = await db.postVote.findUnique({
       where: {
-        userId: session.user.id,
-        postId: id,
+        userId_postId: {
+          userId: session.user.id,
+          postId: id,
+        },
       },
       select: {
         type: true,

@@ -19,17 +19,28 @@ interface ThreadManagerFormFieldProps {
   subForumId: number;
 }
 
-const userCached = new Map<string, { id: string; name: string }[] | null>(null);
+type UsersResultType = {
+  id: string;
+  name?: string | null;
+};
+
+const userCached = new Map<string, UsersResultType[] | null>(null);
 
 const userLookUpService = {
   search: async (
     query: string,
     subForumId: number,
-    callback: (results: { id: string; name: string }[]) => void
+    callback: (results: UsersResultType[]) => void
   ): Promise<void> => {
-    fetch(`/api/search/user/${subForumId}?q=${query}`, { method: 'GET' })
-      .then((res) => res.json())
-      .then((data) => callback(data));
+    fetch(`/api/m/${subForumId}/user?q=${query}`, { method: 'GET' })
+      .then((res) => {
+        if (res.ok) return res.json() as Promise<UsersResultType[]>;
+        else return null;
+      })
+      .then((res) => {
+        if (!res) return;
+        return callback(res);
+      });
   },
 };
 
@@ -39,10 +50,10 @@ const ThreadManagerFormField: FC<ThreadManagerFormFieldProps> = ({
 }) => {
   const [userInput, setUserInput] = useState('');
   const [debouncedValue] = useDebouncedValue(userInput, 300);
-
-  const [userResults, setUserResults] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [userResults, setUserResults] = useState<UsersResultType[]>([]);
+  const [usersSelected, setUsersSelected] = useState<UsersResultType[]>(
+    form.getValues('managers')
+  );
 
   useEffect(() => {
     if (debouncedValue.length) {
@@ -74,54 +85,65 @@ const ThreadManagerFormField: FC<ThreadManagerFormFieldProps> = ({
           <FormLabel>Quản lý</FormLabel>
           <FormMessage />
           <FormControl>
-            <div className="p-1 space-y-1 rounded-md bg-background">
-              {!!field.value.length && (
-                <ul className="flex flex-wrap items-center gap-4">
-                  {field.value.map((user) => (
-                    <li
-                      key={user.id}
-                      className="flex items-center gap-2 p-1 rounded-md dark:bg-zinc-800"
+            <div className="flex flex-wrap items-center rounded-md border border-input bg-background">
+              <ul className="text-sm flex flex-wrap items-center gap-3 ml-1">
+                {usersSelected.map((user) => (
+                  <li
+                    key={user.id}
+                    className="flex items-center gap-1 p-1 rounded-lg bg-primary-foreground"
+                  >
+                    {user.name}
+                    <div
+                      role="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        const updatedUsersSelected = usersSelected.filter(
+                          (u) => u !== user
+                        );
+
+                        field.onChange(updatedUsersSelected);
+                        setUsersSelected(updatedUsersSelected);
+                      }}
                     >
-                      {user.name}
-                      <X
-                        aria-label="remove user button"
-                        className="w-6 h-6 hover:cursor-pointer text-red-500"
-                        onClick={() =>
-                          field.onChange(
-                            field.value.filter((usr) => usr.id !== user.id)
-                          )
-                        }
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
+                      <X className="w-5 h-5 text-red-500" />
+                    </div>
+                  </li>
+                ))}
+              </ul>
               <Input
-                placeholder="Nhập tên người dùng"
-                autoComplete="off"
+                placeholder="Nhập tên thành viên"
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
-                className="p-1 border-none focus-visible:ring-transparent ring-offset-transparent"
+                className="flex-1 bg-inherit border-none focus-visible:ring-offset-0 focus-visible:ring-0"
               />
             </div>
           </FormControl>
-          {!!userResults.length && !!debouncedValue.length && (
-            <ul className="pt-2 flex flex-wrap items-center gap-4">
+          {!!debouncedValue.length && !userResults.length && (
+            <p>Không có kết quả</p>
+          )}
+          {!!debouncedValue.length && !!userResults.length && (
+            <ul className="text-sm flex flex-wrap items-center gap-3">
               {userResults
-                .filter(
-                  (user) => !field.value.some((usr) => user.id === usr.id)
-                )
+                .filter((user) => !usersSelected.includes(user))
                 .map((user) => (
                   <li
                     role="button"
                     key={user.id}
-                    className="p-1 rounded-md dark:bg-zinc-800"
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
 
-                      !field.value.some((usr) => user.id === usr.id) &&
-                        field.onChange([...field.value, user]);
+                      const existed = usersSelected.includes(user);
+                      if (!existed) {
+                        const updatedUsersSelected = [...usersSelected, user];
+
+                        field.onChange(updatedUsersSelected);
+                        setUsersSelected(updatedUsersSelected);
+                      }
                     }}
+                    className="p-1.5 rounded-lg bg-muted hover:cursor-pointer"
                   >
                     {user.name}
                   </li>

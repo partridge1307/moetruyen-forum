@@ -1,139 +1,116 @@
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
-import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useDebouncedValue } from '@mantine/hooks';
-import type { Manga, SubForum, User } from '@prisma/client';
-import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
-import { Search as SearchIcon } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { SearchIcon } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import ForumImage from '../ForumImage';
 import { Input } from '../ui/Input';
-import { Sheet, SheetContent, SheetTrigger } from '../ui/Sheet';
 
-const MangaSearch = dynamic(() => import('@/components/Search/MangaSearch'), {
-  ssr: false,
-});
-const UserSearch = dynamic(() => import('@/components/Search/UserSearch'), {
-  ssr: false,
-});
-const ForumSearch = dynamic(() => import('@/components/Search/ForumSearch'), {
-  ssr: false,
-});
-const SearchSkeleton = dynamic(
-  () => import('@/components/Skeleton/SearchSkeleton')
-);
-
-export type SearchData = {
-  mangas: Pick<Manga, 'id' | 'slug' | 'image' | 'name' | 'review'>[];
-  users: Pick<User, 'name' | 'color' | 'image'>[];
-  forums: Pick<SubForum, 'title' | 'slug' | 'banner'>[];
+type TForumResult = {
+  slug: string;
+  banner: string;
+  title: string;
 };
 
-const searchResultsCache = new Map<string, SearchData | null>();
+const cachedResults = new Map<string, TForumResult[] | null>(null);
 
-const Index = () => {
+const forumLookUpService = {
+  search: async (query: string, callback: (result: TForumResult[]) => void) => {
+    fetch(`/api/search?q=${query}`, { method: 'GET' })
+      .then((res) => {
+        if (res.ok) return res.json() as Promise<TForumResult[]>;
+        else return null;
+      })
+      .then((res) => {
+        if (!res) return;
+        return callback(res);
+      });
+  },
+};
+
+const Search = ({}) => {
   const router = useRouter();
-  const { serverErrorToast } = useCustomToast();
+  const searchParams = useSearchParams();
 
-  const [searchResults, setSearchResults] = useState<SearchData>();
   const [query, setQuery] = useState('');
   const [debouncedValue] = useDebouncedValue(query, 300);
 
-  const { mutate: Search, isLoading: isSearching } = useMutation({
-    mutationFn: async () => {
-      const { data } = await axios.get(`/api/search?q=${debouncedValue}`);
-
-      return data as SearchData;
-    },
-    onError: () => {
-      return serverErrorToast();
-    },
-    onSuccess: (searchData) => {
-      searchResultsCache.set(debouncedValue, searchData);
-      setSearchResults(searchData);
-    },
-  });
+  const [results, setResults] = useState<TForumResult[]>([]);
 
   useEffect(() => {
-    if (debouncedValue.length) {
-      const cachedResults = searchResultsCache.get(debouncedValue);
+    const q = searchParams.get('q');
+    if (!q) return;
 
-      if (cachedResults === null) {
-        return;
-      }
+    setQuery(q);
+    cachedResults.set(q, null);
+    forumLookUpService.search(q, (result) => {
+      cachedResults.set(q, result);
+      setResults(result);
+    });
 
-      if (cachedResults !== undefined) {
-        setSearchResults(cachedResults);
-        return;
-      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-      searchResultsCache.set(debouncedValue, null);
-      Search();
+  useEffect(() => {
+    if (!debouncedValue.length) return;
+    router.replace(`/search?q=${debouncedValue}`);
+
+    const cachedPostsResult = cachedResults.get(debouncedValue);
+
+    if (cachedPostsResult === null) return;
+
+    if (cachedPostsResult !== undefined) {
+      setResults(cachedPostsResult);
+      return;
     }
-  }, [Search, debouncedValue]);
+
+    cachedResults.set(debouncedValue, null);
+    forumLookUpService.search(query, (result) => {
+      cachedResults.set(debouncedValue, result);
+      setResults(result);
+    });
+  }, [debouncedValue, query, router]);
 
   return (
-    <Sheet>
-      <SheetTrigger>
-        <SearchIcon className="w-7 h-7" aria-label="Search button" />
-      </SheetTrigger>
+    <>
+      <div className="relative">
+        <Input
+          placeholder="Nội dung tìm kiếm"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <SearchIcon className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50" />
+      </div>
 
-      <SheetContent side={'top'} className="p-2">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
+      <div className="mt-3">
+        <h1 className="text-2xl font-semibold">Kết quả</h1>
 
-            router.push(
-              `${process.env.NEXT_PUBLIC_MAIN_URL}/search?q=${query}`
-            );
+        {!debouncedValue.length && <p>Vui lòng nhập nội dung tìm kiếm</p>}
 
-            const target = document.getElementById('sheet-close-button');
-            target?.click();
-          }}
-        >
-          <Input
-            name="q"
-            autoComplete="off"
-            placeholder="Tìm kiếm"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="bg-zinc-800"
-          />
-        </form>
+        {!!debouncedValue.length && !results.length && <p>Không có kết quả</p>}
 
-        {isSearching && !!debouncedValue.length && <SearchSkeleton />}
-
-        {!isSearching && !debouncedValue.length && (
-          <p className="mt-6 px-1">Nhập nội dung bạn muốn tìm kiếm</p>
+        {!!debouncedValue.length && !!results.length && (
+          <ul className="mt-2 space-y-4">
+            {results.map((forum, idx) => (
+              <li key={`${forum.slug}-${idx}`}>
+                <Link
+                  href={`/m/${forum.slug}`}
+                  className="grid grid-cols-[.4fr_1fr] gap-3 rounded-md transition-colors hover:bg-muted"
+                >
+                  <ForumImage forum={forum} sizes="25vw" />
+                  <p className="text-xl font-semibold line-clamp-2 md:line-clamp-3">
+                    {forum.title}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
-
-        {!isSearching && !!debouncedValue.length && (
-          <Tabs defaultValue="manga" className="mt-6">
-            <TabsList>
-              <TabsTrigger value="manga">Manga</TabsTrigger>
-              <TabsTrigger value="user">User</TabsTrigger>
-              <TabsTrigger value="forum">Forum</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="manga">
-              <MangaSearch mangas={searchResults?.mangas} />
-            </TabsContent>
-
-            <TabsContent value="user">
-              <UserSearch users={searchResults?.users} />
-            </TabsContent>
-
-            <TabsContent value="forum">
-              <ForumSearch forums={searchResults?.forums} />
-            </TabsContent>
-          </Tabs>
-        )}
-      </SheetContent>
-    </Sheet>
+      </div>
+    </>
   );
 };
 
-export default Index;
+export default Search;

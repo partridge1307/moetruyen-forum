@@ -1,62 +1,62 @@
 'use client';
 
 import { useComments } from '@/hooks/use-comment';
-import { useIntersection, usePrevious } from '@mantine/hooks';
-import type { PostComment, PostVote, User } from '@prisma/client';
+import { cn } from '@/lib/utils';
+import { useIntersection } from '@mantine/hooks';
+import type { PostComment, PostCommentVote, User } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import type { Session } from 'next-auth';
 import dynamic from 'next/dynamic';
-import { FC, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import CommentCard from './CommentCard';
-import EditorSkeleton from '../Skeleton/EditorSkeleton';
-import { cn } from '@/lib/utils';
+import { CommentInputProps } from './components/CommentInput';
+import type { DeleteCommentProps } from './components/DeleteComment';
 
-const CommentInput = dynamic(() => import('./components/CommentInput'), {
-  ssr: false,
-  loading: () => (
-    <div>
-      <EditorSkeleton />
-      <div className="h-10 rounded-md animate-pulse dark:bg-zinc-900" />
-    </div>
-  ),
-});
-const DeleteComment = dynamic(() => import('./components/DeleteComment'), {
-  ssr: false,
-});
+const CommentInput = dynamic<CommentInputProps<ExtendedComment>>(
+  () => import('./components/CommentInput'),
+  {
+    ssr: false,
+  }
+);
+const DeleteComment = dynamic<DeleteCommentProps<ExtendedComment>>(
+  () => import('./components/DeleteComment'),
+  {
+    ssr: false,
+  }
+);
 
-interface indexProps {
-  id: number;
-  session: Session | null;
-  isManager: boolean;
-}
+const API_QUERY = '/api/comment';
 
 export type ExtendedComment = Pick<
   PostComment,
   'id' | 'content' | 'oEmbed' | 'creatorId' | 'createdAt'
 > & {
-  creator: Pick<User, 'name' | 'color' | 'image'>;
-  votes: PostVote[];
-  _count: {
-    replies: number;
-  };
+  creator: Pick<User, 'name' | 'image' | 'color'>;
+  votes: PostCommentVote[];
+  _count: { replies: number };
   isSending?: boolean;
 };
 
-const Comments: FC<indexProps> = ({ id, session, isManager }) => {
-  const lastCommentRef = useRef(null);
+interface CommentProps {
+  id: number;
+  session: Session | null;
+}
+
+const Comments = ({ id, session }: CommentProps) => {
+  const lastCmtRef = useRef<HTMLElement>(null);
   const { ref, entry } = useIntersection({
     threshold: 1,
-    root: lastCommentRef.current,
+    root: lastCmtRef.current,
   });
   const [comments, setComments] = useState<ExtendedComment[]>([]);
-  const prevComments = usePrevious(comments);
 
   const {
     data: commentsData,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = useComments<ExtendedComment>(id, `/api/comment/${id}`);
+  } = useComments<ExtendedComment>(id, `${API_QUERY}/${id}`);
 
   useEffect(() => {
     if (entry?.isIntersecting && hasNextPage) {
@@ -65,9 +65,7 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
   }, [entry?.isIntersecting, fetchNextPage, hasNextPage]);
 
   useEffect(() => {
-    if (commentsData?.pages) {
-      setComments(commentsData.pages.flatMap((page) => page.comments) ?? []);
-    }
+    setComments(commentsData?.pages.flatMap((page) => page.comments) ?? []);
   }, [commentsData?.pages]);
 
   return (
@@ -75,19 +73,26 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
       {!!session ? (
         <CommentInput
           type="COMMENT"
+          id={id}
           session={session}
-          postId={id}
           setComments={setComments}
-          prevComment={prevComments}
+          APIQuery={API_QUERY}
         />
       ) : (
-        <p>
-          Vui lòng <span className="font-semibold">đăng nhập</span> hoặc{' '}
-          <span className="font-semibold">đăng ký</span> để bình luận
+        <p className="mt-4">
+          Vui lòng{' '}
+          <Link href="/sign-in" className="font-semibold">
+            đăng nhập
+          </Link>{' '}
+          hoặc{' '}
+          <Link href="/sign-up" className="font-semibold">
+            đăng ký
+          </Link>{' '}
+          để bình luận
         </p>
       )}
 
-      <ul className="space-y-12">
+      <ul className="space-y-10 mt-10">
         {comments.map((comment, idx) => {
           if (idx === comments.length - 1)
             return (
@@ -98,15 +103,10 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
                   'opacity-70': comment.isSending,
                 })}
               >
-                <CommentCard
-                  comment={comment}
-                  session={session}
-                  isManager={isManager}
-                >
-                  {(comment.creatorId === session?.user.id || isManager) && (
+                <CommentCard comment={comment} session={session}>
+                  {comment.creatorId === session?.user.id && (
                     <DeleteComment
                       isSending={comment.isSending}
-                      type="COMMENT"
                       commentId={comment.id}
                       APIQuery={`/api/comment/${comment.id}`}
                       setComments={setComments}
@@ -123,15 +123,10 @@ const Comments: FC<indexProps> = ({ id, session, isManager }) => {
                   'opacity-70': comment.isSending,
                 })}
               >
-                <CommentCard
-                  comment={comment}
-                  session={session}
-                  isManager={isManager}
-                >
-                  {(comment.creatorId === session?.user.id || isManager) && (
+                <CommentCard comment={comment} session={session}>
+                  {comment.creatorId === session?.user.id && (
                     <DeleteComment
                       isSending={comment.isSending}
-                      type="COMMENT"
                       commentId={comment.id}
                       APIQuery={`/api/comment/${comment.id}`}
                       setComments={setComments}

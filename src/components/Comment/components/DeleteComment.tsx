@@ -1,10 +1,9 @@
 'use client';
 
-import { useCustomToast } from '@/hooks/use-custom-toast';
-import { useMutation } from '@tanstack/react-query';
-import axios, { AxiosError } from 'axios';
+import useDeleteComment from '@/hooks/use-delete-comment';
 import { Loader2, X } from 'lucide-react';
-import { Dispatch, FC, SetStateAction } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+import { memo } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,55 +16,25 @@ import {
   AlertDialogTrigger,
 } from '../../ui/AlertDialog';
 import { buttonVariants } from '../../ui/Button';
-import { ExtendedComment } from '..';
-import { ExtendedSubComment } from '../SubComment';
 
-type DeleteCommentProps = {
+export type DeleteCommentProps<TData> = {
   commentId: number;
   APIQuery: string;
   isSending?: boolean;
-} & (
-  | {
-      type: 'COMMENT';
-      setComments: Dispatch<SetStateAction<ExtendedComment[]>>;
-    }
-  | {
-      type: 'SUB_COMMENT';
-      setComments: Dispatch<SetStateAction<ExtendedSubComment[]>>;
-    }
-);
+  setComments: Dispatch<SetStateAction<TData[]>>;
+} & React.HTMLAttributes<HTMLButtonElement>;
 
-const DeleteComment: FC<DeleteCommentProps> = ({
-  type,
+function DeleteComment<TData>({
   commentId,
-  isSending,
   APIQuery,
+  isSending,
   setComments,
-}) => {
-  const { loginToast, notFoundToast, serverErrorToast, successToast } =
-    useCustomToast();
-  const { mutate: Delete, isLoading: isDeleting } = useMutation({
-    mutationKey: ['delete-comment', commentId],
-    mutationFn: async () => {
-      await axios.delete(`${APIQuery}`);
-    },
-    onError: (err) => {
-      if (err instanceof AxiosError) {
-        if (err.response?.status === 401) return loginToast();
-        if (err.response?.status === 404) return notFoundToast();
-      }
-
-      return serverErrorToast();
-    },
-    onSuccess: () => {
-      type === 'COMMENT'
-        ? setComments((prev) =>
-            prev.filter((comment) => comment.id !== commentId)
-          )
-        : setComments((prev) =>
-            prev.filter((comment) => comment.id !== commentId)
-          );
-    },
+  ...props
+}: DeleteCommentProps<TData>) {
+  const { mutate: Delete, isLoading: isDeleting } = useDeleteComment({
+    commentId,
+    APIQuery,
+    setComments,
   });
 
   return (
@@ -73,6 +42,7 @@ const DeleteComment: FC<DeleteCommentProps> = ({
       <AlertDialogTrigger
         disabled={isDeleting || isSending}
         className="hover:bg-red-500 text-red-500 hover:text-white transition-colors p-2 rounded-md"
+        {...props}
       >
         {isDeleting ? (
           <Loader2 className="w-5 h-5 animate-spin" />
@@ -100,6 +70,6 @@ const DeleteComment: FC<DeleteCommentProps> = ({
       </AlertDialogContent>
     </AlertDialog>
   );
-};
+}
 
-export default DeleteComment;
+export default memo(DeleteComment) as typeof DeleteComment;

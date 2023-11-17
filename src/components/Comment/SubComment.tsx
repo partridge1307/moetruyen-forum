@@ -1,50 +1,62 @@
 'use client';
 
+import CommentVoteSkeleton from '@/components/Skeleton/CommentVoteSkeleton';
 import UserAvatar from '@/components/User/UserAvatar';
 import Username from '@/components/User/Username';
+import { useCustomToast } from '@/hooks/use-custom-toast';
 import { useSubComments } from '@/hooks/use-sub-comment';
 import { cn, formatTimeToNow } from '@/lib/utils';
-import { usePrevious } from '@mantine/hooks';
-import type { PostComment, PostVote, User } from '@prisma/client';
+import type { PostComment, PostCommentVote, User } from '@prisma/client';
 import { Loader2 } from 'lucide-react';
 import type { Session } from 'next-auth';
 import dynamic from 'next/dynamic';
 import { FC, useEffect, useState } from 'react';
-import CommentVoteSkeleton from '../Skeleton/CommentVoteSkeleton';
 import CommentContent from './components/CommentContent';
+import type { CommentInputProps } from './components/CommentInput';
 import CommentOEmbed from './components/CommentOEmbed';
+import type { DeleteCommentProps } from './components/DeleteComment';
 
 const CommentVote = dynamic(() => import('./components/CommentVote'), {
   ssr: false,
   loading: () => <CommentVoteSkeleton />,
 });
-const CommentInput = dynamic(() => import('./components/CommentInput'), {
-  ssr: false,
-});
-const DeleteComment = dynamic(() => import('./components/DeleteComment'), {
-  ssr: false,
-});
+const DeleteComment = dynamic<DeleteCommentProps<ExtendedSubComment>>(
+  () => import('./components/DeleteComment'),
+  { ssr: false }
+);
+const CommentInput = dynamic<CommentInputProps<ExtendedSubComment>>(
+  () => import('./components/CommentInput'),
+  { ssr: false }
+);
 
 export type ExtendedSubComment = Pick<
   PostComment,
   'id' | 'content' | 'oEmbed' | 'creatorId' | 'createdAt'
 > & {
   creator: Pick<User, 'name' | 'image' | 'color'>;
-  votes: PostVote[];
+  votes: PostCommentVote[];
   isSending?: boolean;
 };
 
 interface SubCommentProps {
   commentId: number;
   session: Session | null;
-  isManager: boolean;
 }
 
-const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
-  const { data: subCommentsData, isFetching } =
-    useSubComments<ExtendedSubComment>(commentId, `/api/comment/${commentId}`);
+const SubComment: FC<SubCommentProps> = ({ commentId, session }) => {
+  const { serverErrorToast } = useCustomToast();
+  const {
+    data: subCommentsData,
+    error,
+    isFetching,
+  } = useSubComments<ExtendedSubComment>(commentId);
   const [subComments, setSubComments] = useState<ExtendedSubComment[]>([]);
-  const prevComments = usePrevious(subComments);
+
+  useEffect(() => {
+    if (error) {
+      serverErrorToast();
+    }
+  }, [error, serverErrorToast]);
 
   useEffect(() => {
     if (subCommentsData?.length) {
@@ -86,8 +98,8 @@ const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
 
                 <div className="space-y-2">
                   <CommentContent
-                    id={subComment.id}
-                    content={subComment.content}
+                    commentId={subComment.id}
+                    commentContent={subComment.content}
                   />
 
                   {!!subComment.oEmbed && (
@@ -101,14 +113,13 @@ const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
                         commentId={subComment.id}
                         votes={subComment.votes}
                         sessionUserId={session.user.id}
+                        APIQuery="/api/comment"
                       />
                     )}
 
-                    {(session?.user.id === subComment.creatorId ||
-                      isManager) && (
+                    {session?.user.id === subComment.creatorId && (
                       <DeleteComment
                         isSending={subComment.isSending}
-                        type="SUB_COMMENT"
                         commentId={subComment.id}
                         APIQuery={`/api/comment/${subComment.id}`}
                         setComments={setSubComments}
@@ -125,9 +136,9 @@ const SubComment: FC<SubCommentProps> = ({ commentId, session, isManager }) => {
         <CommentInput
           type="SUB_COMMENT"
           session={session}
-          postId={commentId}
+          id={commentId}
           setComments={setSubComments}
-          prevComment={prevComments}
+          APIQuery="/api/comment"
         />
       )}
     </>

@@ -59,3 +59,24 @@ export const searchForum = ({
 
   return db.$queryRaw`SELECT "slug", "banner", "title" FROM "SubForum" WHERE to_tsvector('english', "title") @@ to_tsquery(${query}) LIMIT ${take} OFFSET ${skip}`;
 };
+
+export type SearchPostResult = {
+  id: string;
+  title: string;
+  slug: string;
+  plainTextContent: string;
+};
+
+export const SearchPost = ({
+  searchPhrase,
+  forumId,
+  take,
+}: {
+  searchPhrase: string;
+  forumId: number;
+  take: number;
+}): Promise<SearchPostResult[]> => {
+  const query = generateSearchPhrase(searchPhrase);
+
+  return db.$queryRaw`SELECT p."id", p."title", f."slug", p."plainTextContent" FROM "Post" AS p INNER JOIN "SubForum" AS f ON p."subForumId" = f."id" WHERE f."id" = ${forumId} AND to_tsvector('english', p."plainTextContent") @@ to_tsquery(${query}) LIMIT ${take}`;
+};

@@ -7,6 +7,7 @@ import { CreatePostPayload, CreatePostValidator } from '@/lib/validators/forum';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
+import { $getRoot, type LexicalEditor } from 'lexical';
 import { useRouter } from 'next/navigation';
 import { FC, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
@@ -20,15 +21,16 @@ interface CreatePostFormProps {
 const CreatePostForm: FC<CreatePostFormProps> = ({ id }) => {
   const { loginToast, notFoundToast, serverErrorToast, successToast } =
     useCustomToast();
-  const titleRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
+  const titleRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<LexicalEditor>(null);
 
   const form = useForm<CreatePostPayload>({
     resolver: zodResolver(CreatePostValidator),
     defaultValues: {
       title: '',
       content: undefined,
-      description: '',
+      plainTextContent: undefined,
     },
   });
 
@@ -56,14 +58,25 @@ const CreatePostForm: FC<CreatePostFormProps> = ({ id }) => {
   }, []);
 
   function onSubmit(values: CreatePostPayload) {
-    Upload(values);
+    const editorState = editorRef.current?.getEditorState();
+    const textContent = editorState?.read(() => {
+      return $getRoot().getTextContent();
+    });
+
+    const payload: CreatePostPayload = {
+      title: values.title,
+      content: values.content,
+      plainTextContent: textContent,
+    };
+
+    Upload(payload);
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
         <PostTitleFormField form={form} />
-        <PostContentFormField form={form} />
+        <PostContentFormField editorRef={editorRef} form={form} />
 
         <div className="flex justify-end items-center gap-8">
           <Button

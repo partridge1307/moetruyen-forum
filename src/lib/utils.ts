@@ -144,7 +144,7 @@ export const shuffeArray = <T>(array: T[]) => {
   return arr;
 };
 
-const tsquerySpecialChars = /[()|&:*!]/g;
+export const tsquerySpecialChars = /[()|&:*!]/g;
 export const generateSearchPhrase = (searchPhrase: string) =>
   searchPhrase
     .replace(tsquerySpecialChars, ' ')
@@ -152,3 +152,17 @@ export const generateSearchPhrase = (searchPhrase: string) =>
     .split(/\s+/)
     .map((phrase) => `${phrase}:*`)
     .join(' | ');
+
+export const nFormatter = (num: number, digits: number) => {
+  const lookup = [
+    { value: 1e9, symbol: 'T' },
+    { value: 1e6, symbol: 'tr' },
+    { value: 1e3, symbol: 'k' },
+    { value: 1, symbol: '' },
+  ];
+  const regex = /\.0+$|(\.[0-9]*[1-9])0+$/;
+
+  const item = lookup.find((item) => num >= item.value);
+
+  return item ? (num / item.value).toFixed(digits).replace(regex, '$1') : '0';
+};

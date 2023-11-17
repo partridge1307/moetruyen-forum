@@ -104,8 +104,6 @@ model User {
   followedBy User[] @relation("userFollows")
   following  User[] @relation("userFollows")
 
-  messages       Message[]
-  conversation   Conversation[]  @relation("ConversationToUser")
   isWaitVeify    VerifyList?
   discordChannel DiscordChannel?
 
@@ -199,6 +197,7 @@ model Manga {
   id           Int           @id @default(autoincrement())
   slug         String        @unique
   name         String
+  cover        String?
   image        String
   description  Json
   review       String
@@ -224,6 +223,7 @@ model Manga {
   @@unique([name, creatorId])
   @@index([creatorId])
   @@index([slug])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, name: "Manga_name_gin_index")
 }
 
 model MangaAuthor {
@@ -239,17 +239,18 @@ model Chapter {
   chapterIndex Float        @default(1)
   name         String?
   images       String[]
-  blurImages   String[]
   volume       Int
   mangaId      Int
   teamId       Int?
   isPublished  Boolean      @default(false)
+  progress     ProgressType @default(UPLOADING)
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
-  manga        Manga        @relation(fields: [mangaId], references: [id], onDelete: Cascade)
-  comment      Comment[]
-  dailyView    DailyView[]
-  weeklyView   WeeklyView[]
+
+  manga      Manga        @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  comment    Comment[]
+  dailyView  DailyView[]
+  weeklyView WeeklyView[]
 
   team Team? @relation(fields: [teamId], references: [id])
 
@@ -339,7 +340,6 @@ model History {
   id        Int      @id @default(autoincrement())
   userId    String
   mangaId   Int
-  chapterId Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -363,29 +363,6 @@ model DiscordChannel {
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId])
-}
-
-// Chat
-
-model Conversation {
-  id        Int       @id @default(autoincrement())
-  createdAt DateTime  @default(now())
-  messages  Message[]
-  users     User[]    @relation("ConversationToUser")
-}
-
-model Message {
-  id             Int      @id @default(autoincrement())
-  content        String
-  conversationId Int
-  senderId       String
-  createdAt      DateTime @default(now())
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender       User         @relation(fields: [senderId], references: [id])
-
-  @@index([conversationId])
-  @@index([senderId])
 }
 
 // Manage
@@ -427,16 +404,16 @@ model Subscription {
 }
 
 model Post {
-  id          Int           @id @default(autoincrement())
-  subForumId  Int
-  title       String
-  content     Json
-  description String
-  authorId    String
-  comments    PostComment[]
-  votes       PostVote[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id               Int           @id @default(autoincrement())
+  subForumId       Int
+  title            String
+  content          Json
+  plainTextContent String
+  authorId         String
+  comments         PostComment[]
+  votes            PostVote[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
 
   subForum SubForum @relation(fields: [subForumId], references: [id], onDelete: Cascade)
   author   User     @relation(fields: [authorId], references: [id])
@@ -487,6 +464,13 @@ model PostCommentVote {
 
   @@id([userId, postCommentId])
   @@index([postCommentId, userId])
+}
+
+enum ProgressType {
+  SUCCESS
+  ERROR
+  UPLOADING
+  EDITTING
 }
 
 enum VoteType {

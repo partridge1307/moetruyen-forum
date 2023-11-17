@@ -72,7 +72,7 @@ const Edit: FC<EditProps> = ({ subForum }) => {
         form.append('managers', JSON.stringify(manager))
       );
 
-      const { data } = await axios.put(`/api/m/${subForum.id}`, form);
+      const { data } = await axios.post(`/api/m/${subForum.id}/edit`, form);
 
       return data as string;
     },
@@ -96,7 +96,7 @@ const Edit: FC<EditProps> = ({ subForum }) => {
       return serverErrorToast();
     },
     onSuccess: (data) => {
-      router.push(`/${data}`);
+      router.push(`/m/${data}`);
       router.refresh();
 
       return successToast();
@@ -110,10 +110,10 @@ const Edit: FC<EditProps> = ({ subForum }) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-6">
-        <ThreadImageForm type="EDIT" form={form} />
-        <ThreadTitleField type="EDIT" form={form} />
-        <ThreadSlugFormField type="EDIT" form={form} />
-        <ThreadCanSendField type="EDIT" form={form} />
+        <ThreadImageForm form={form} />
+        <ThreadTitleField form={form} />
+        <ThreadSlugFormField form={form} />
+        <ThreadCanSendField form={form} />
         <ThreadManagerFormField form={form} subForumId={subForum.id} />
 
         <div className="flex justify-end gap-4">

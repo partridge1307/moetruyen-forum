@@ -1,109 +1,155 @@
-import GeneralFeed from '@/components/Feed/GeneralFeed';
-import SubscribedFeed from '@/components/Feed/SubscribedFeed';
-import { buttonVariants } from '@/components/ui/Button';
+import { INFINITE_SCROLL_PAGINATION_RESULTS } from '@/config';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { cn, shuffeArray } from '@/lib/utils';
-import { ArrowRight, Home } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
-const page = async () => {
-  const [subForums, session] = await Promise.all([
-    db.subForum.findMany({
-      orderBy: {
-        subscriptions: {
-          _count: 'desc',
-        },
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        _count: {
-          select: {
-            subscriptions: true,
-          },
-        },
-      },
-      take: 100,
-    }),
-    getAuthSession(),
-  ]);
+const Homepage = dynamic(() => import('@/components/Sidebar/Homepage'));
+const Feed = dynamic(() => import('@/components/Feed'), { ssr: false });
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    itemListElement: subForums.map((sub, idx) => ({
-      '@type': 'ListItem',
-      position: idx + 1,
-      url: `${process.env.NEXTAUTH_URL}/${sub.slug}`,
-    })),
-  };
+const page = async ({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) => {
+  const tab = searchParams['tab'] ?? 'home';
+  const posts = await getPosts(tab === 'following');
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <section className="fixed md:relative top-0 lg:top-0 w-full lg:w-4/6 max-h-[calc(100%-4.25rem)] md:max-h-full bg-primary-foreground overflow-y-auto hide_scrollbar">
+        <div className="sticky top-0 z-50 flex mb-5 border-b-2 border-primary bg-primary-foreground">
+          <Link href="/" className="w-full p-5 pb-4 text-center">
+            <span
+              className={
+                tab !== 'following'
+                  ? 'pb-1 border-b-4 border-primary'
+                  : undefined
+              }
+            >
+              Mọi người
+            </span>
+          </Link>
+          <Link href="/?tab=following" className="w-full p-5 pb-4 text-center">
+            <span
+              className={
+                tab === 'following'
+                  ? 'pb-1 border-b-4 border-primary'
+                  : undefined
+              }
+            >
+              Theo dõi
+            </span>
+          </Link>
+        </div>
 
-      <main className="container max-sm:px-2 grid grid-cols-1 lg:grid-cols-[1fr_.45fr] gap-6">
-        <section className="space-y-2">
-          <h1 className="text-xl font-semibold">Bài viết</h1>
-          {session ? <SubscribedFeed session={session} /> : <GeneralFeed />}
-        </section>
-
-        <section className="order-first lg:order-last h-fit rounded-md dark:bg-zinc-900">
-          <h1 className="text-lg font-semibold flex items-center gap-1 p-3 rounded-t-md dark:bg-zinc-700">
-            <Home className="w-5 h-5" /> Trang chủ
-          </h1>
-
-          <div className="space-y-8 p-2 py-4">
-            <Link href="/create" className={cn(buttonVariants(), 'w-full')}>
-              <span className="font-medium">Tạo cộng đồng</span>
-            </Link>
-
-            <div className="text-start space-y-4">
-              <h1>Cộng đồng nổi bật</h1>
-
-              <ul className="space-y-2">
-                {shuffeArray(subForums)
-                  .slice(0, 5)
-                  .map((subForum) => (
-                    <li key={subForum.id}>
-                      <Link href={`/${subForum.slug}`}>
-                        <div className="p-2 rounded-md hover:dark:bg-zinc-800">
-                          <p>
-                            m/<span>{subForum.title}</span>
-                          </p>
-                          <p className="text-sm">
-                            {subForum._count.subscriptions} member
-                          </p>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-              </ul>
-
-              <Link
-                href="/top-forum"
-                aria-label="top forum button"
-                className={cn(
-                  buttonVariants({
-                    variant: 'link',
-                  }),
-                  'space-x-2 px-0'
-                )}
-              >
-                <span>Cộng đồng nổi bật khác</span>
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+        <div className="p-3">
+          {!posts?.length ? (
+            <p className="text-3xl font-semibold">Không có kết quả</p>
+          ) : (
+            <Feed
+              initialPosts={{
+                posts,
+                lastCursor:
+                  posts.length === INFINITE_SCROLL_PAGINATION_RESULTS
+                    ? posts[posts.length - 1].id
+                    : undefined,
+              }}
+              type={tab === 'following' ? 'FOLLOW' : 'GENERAL'}
+            />
+          )}
+        </div>
+      </section>
+      <Homepage />
     </>
   );
 };
 
 export default page;
+
+const getPosts = async (isFollowTab: boolean) => {
+  if (!isFollowTab)
+    return db.post.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: INFINITE_SCROLL_PAGINATION_RESULTS,
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        votes: true,
+        subForum: {
+          select: {
+            slug: true,
+            title: true,
+          },
+        },
+        author: {
+          select: {
+            name: true,
+            color: true,
+            image: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+    });
+  else {
+    const session = await getAuthSession();
+    if (!session) return null;
+
+    return db.post.findMany({
+      where: {
+        subForum: {
+          OR: [
+            {
+              creatorId: session.user.id,
+            },
+            {
+              subscriptions: {
+                some: {
+                  userId: session.user.id,
+                },
+              },
+            },
+          ],
+        },
+      },
+      take: INFINITE_SCROLL_PAGINATION_RESULTS,
+      orderBy: {
+        createdAt: 'desc',
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        createdAt: true,
+        votes: true,
+        subForum: {
+          select: {
+            slug: true,
+            title: true,
+          },
+        },
+        author: {
+          select: {
+            name: true,
+            color: true,
+            image: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
+      },
+    });
+  }
+};

@@ -3,13 +3,13 @@ import { usePrevious } from '@mantine/hooks';
 import type { VoteType } from '@prisma/client';
 import { useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCustomToast } from './use-custom-toast';
 
 export const useVote = (
   id: number,
-  callbackURL: string,
   initialVoteAmt: number,
+  voteType: 'POST' | 'COMMENT',
   initialVote?: VoteType | null
 ) => {
   const { loginToast, notFoundToast, serverErrorToast } = useCustomToast();
@@ -18,14 +18,17 @@ export const useVote = (
   const prevVote = usePrevious(currentVote);
 
   const { mutate: Vote } = useMutation({
-    mutationKey: ['vote-query', callbackURL, id],
+    mutationKey: ['vote-query', id],
     mutationFn: async (type: VoteType) => {
       const payload: VotePayload = {
         id,
         voteType: type,
       };
 
-      await axios.patch(`${callbackURL}/vote`, payload);
+      await axios.post(
+        `/api/${voteType === 'COMMENT' ? 'comment' : 'm'}/vote`,
+        payload
+      );
     },
     onError: (err, voteType) => {
       if (voteType === 'UP_VOTE') setVoteAmt((prev) => prev - 1);
@@ -55,6 +58,10 @@ export const useVote = (
       }
     },
   });
+
+  useEffect(() => {
+    setCurrentVote(initialVote);
+  }, [initialVote]);
 
   return { Vote, voteAmt, currentVote };
 };

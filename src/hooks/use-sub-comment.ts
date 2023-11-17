@@ -1,19 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { useCustomToast } from './use-custom-toast';
 
-export const useSubComments = <TData>(commentId: number, APIQuery: string) => {
-  const { serverErrorToast } = useCustomToast();
-
-  return useQuery({
+export const useSubComments = <TData>(commentId: number) =>
+  useQuery({
     queryKey: [`sub-comment-query`, commentId],
     queryFn: async () => {
-      const { data } = await axios.get(`${APIQuery}/sub-comment`);
+      const { data } = await axios.get(`/api/comment/${commentId}/sub-comment`);
 
       return data as TData[];
     },
-    onError: () => {
-      return serverErrorToast();
-    },
+    refetchOnWindowFocus: false,
   });
-};

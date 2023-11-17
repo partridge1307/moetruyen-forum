@@ -8,9 +8,9 @@ import {
 } from '@/components/ui/Form';
 import { CreatePostPayload } from '@/lib/validators/forum';
 import type { Prisma } from '@prisma/client';
-import { $getRoot } from 'lexical';
+import type { LexicalEditor } from 'lexical';
 import dynamic from 'next/dynamic';
-import { FC } from 'react';
+import type { FC, RefObject } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 const MoetruyenEditor = dynamic(
@@ -22,11 +22,13 @@ const MoetruyenEditor = dynamic(
 );
 
 interface PostContentFormFieldProps {
+  editorRef: RefObject<LexicalEditor>;
   form: UseFormReturn<CreatePostPayload>;
   initialContent?: Prisma.JsonValue;
 }
 
 const PostContentFormField: FC<PostContentFormFieldProps> = ({
+  editorRef,
   form,
   initialContent,
 }) => {
@@ -40,20 +42,11 @@ const PostContentFormField: FC<PostContentFormFieldProps> = ({
           <FormMessage />
           <FormControl>
             <MoetruyenEditor
+              editorRef={editorRef}
               placeholder="Nhập nội dung"
               initialContent={initialContent}
               onChange={(editorState) => {
                 field.onChange(editorState.toJSON());
-                form.setValue(
-                  'description',
-                  editorState.read(() => {
-                    const textContent = $getRoot().getTextContent();
-
-                    return !!textContent
-                      ? textContent.slice(0, 1024)
-                      : 'Không có mô tả';
-                  })
-                );
               }}
             />
           </FormControl>

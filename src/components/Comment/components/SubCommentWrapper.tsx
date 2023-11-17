@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { CornerDownRight } from 'lucide-react';
-import { forwardRef, useState } from 'react';
+import { forwardRef, memo, useState } from 'react';
 
 interface SubCommentProps {
   subCommentLength: number;
@@ -33,4 +33,4 @@ const SubCommentWrapper = forwardRef<HTMLButtonElement, SubCommentProps>(
   }
 );
 
-export default SubCommentWrapper;
+export default memo(SubCommentWrapper);

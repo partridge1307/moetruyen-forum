@@ -54,11 +54,19 @@ export const useCustomToast = () => {
     });
   };
 
+  const rateLimitToast = () =>
+    toast({
+      title: 'Quá nhanh rồi',
+      description: 'Vui lòng chậm lại chút',
+      variant: 'destructive',
+    });
+
   return {
     loginToast,
     notFoundToast,
     serverErrorToast,
     successToast,
     verifyToast,
+    rateLimitToast,
   };
 };

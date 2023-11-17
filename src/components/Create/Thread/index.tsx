@@ -84,7 +84,7 @@ const Thread = () => {
       return serverErrorToast();
     },
     onSuccess: (data) => {
-      router.push(`/${data}`);
+      router.push(`/m/${data}`);
       router.refresh();
 
       return successToast();
@@ -98,10 +98,10 @@ const Thread = () => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-6">
-        <ThreadThumbnailField type="CREATE" form={form} />
-        <ThreadTitleField type="CREATE" form={form} />
-        <ThreadSlugFormField type="CREATE" form={form} />
-        <ThreadCanSendField type="CREATE" form={form} />
+        <ThreadThumbnailField form={form} />
+        <ThreadTitleField form={form} />
+        <ThreadSlugFormField form={form} />
+        <ThreadCanSendField form={form} />
 
         <div className="flex justify-end gap-4">
           <Button

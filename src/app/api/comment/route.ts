@@ -25,46 +25,39 @@ export async function POST(req: Request) {
           creatorId: true,
           post: {
             select: {
-              id: true,
               subForum: {
-                select: { slug: true },
+                select: {
+                  slug: true,
+                },
               },
             },
           },
         },
       });
 
-      if (targetComment.creatorId !== session.user.id) {
-        [createdComment] = await db.$transaction([
-          db.postComment.create({
-            data: {
-              postId: targetComment.postId,
-              replyToId: targetComment.id,
-              creatorId: session.user.id,
-              content: { ...content },
-              oEmbed,
-            },
-          }),
-          db.notify.create({
-            data: {
-              type: 'GENERAL',
-              toUserId: targetComment.creatorId,
-              content: `${session.user.name} vừa phản hồi bình luận của bạn trong Forum`,
-              endPoint: `${process.env.NEXTAUTH_URL}/${targetComment.post.subForum.slug}/${targetComment.postId}`,
-            },
-          }),
-        ]);
-      } else {
-        createdComment = await db.postComment.create({
+      [createdComment] = await db.$transaction([
+        db.postComment.create({
           data: {
-            postId: targetComment.postId,
             replyToId: targetComment.id,
+            postId: targetComment.postId,
             creatorId: session.user.id,
             content: { ...content },
             oEmbed,
           },
-        });
-      }
+        }),
+        ...(session.user.id !== targetComment.creatorId
+          ? [
+              db.notify.create({
+                data: {
+                  type: 'GENERAL',
+                  toUserId: targetComment.creatorId,
+                  content: `${session.user.name} vừa phản hồi bình luận của bạn`,
+                  endPoint: `${process.env.NEXTAUTH_URL}/m/${targetComment.post.subForum.slug}/${targetComment.postId}`,
+                },
+              }),
+            ]
+          : []),
+      ]);
     } else {
       createdComment = await db.postComment.create({
         data: {

@@ -1,7 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['i.moetruyen.net'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'i.moetruyen.net',
+        port: '',
+        pathname: '/*/**',
+      },
+    ],
   },
   experimental: {
     optimizePackageImports: [

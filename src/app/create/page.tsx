@@ -4,6 +4,29 @@ import dynamic from 'next/dynamic';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 
+const Homepage = dynamic(() => import('@/components/Sidebar/Homepage'));
+
+const CreateThreadForm = dynamic(() => import('@/components/Create/Thread'), {
+  ssr: false,
+  loading: () => <ThreadCreateSkeleton />,
+});
+
+const page = async () => {
+  const session = await getAuthSession();
+  if (!session) return redirect('/');
+
+  return (
+    <>
+      <section className="relative p-3 my-2 w-full lg:w-4/6 max-h-full overflow-y-auto hide_scrollbar">
+        <CreateThreadForm />
+      </section>
+      <Homepage />
+    </>
+  );
+};
+
+export default page;
+
 export const metadata: Metadata = {
   title: {
     default: 'Tạo cộng đồng',
@@ -26,21 +49,3 @@ export const metadata: Metadata = {
     site: 'Moetruyen Forum',
   },
 };
-
-const CreateThreadForm = dynamic(() => import('@/components/Create/Thread'), {
-  ssr: false,
-  loading: () => <ThreadCreateSkeleton />,
-});
-
-const page = async () => {
-  const session = await getAuthSession();
-  if (!session) return redirect('/');
-
-  return (
-    <main className="containter mx-auto lg:w-2/3 p-3 mb-10 rounded-md dark:bg-zinc-900/60">
-      <CreateThreadForm />
-    </main>
-  );
-};
-
-export default page;

@@ -1,9 +1,26 @@
-import Navbar from '@/components/Nav/Navbar';
 import Providers from '@/components/Providers';
 import { Toaster } from '@/components/ui/Toaster';
 import '@/styles/globals.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Roboto } from 'next/font/google';
+import dynamic from 'next/dynamic';
+
+const Header = dynamic(() => import('@/components/Sidebar/Header'), {
+  ssr: false,
+  loading: () => (
+    <div className="absolute z-[9999] inset-0 flex items-center justify-center bg-background">
+      <p className="text-3xl">Meow...</p>
+    </div>
+  ),
+});
+
+export const viewport: Viewport = {
+  colorScheme: 'dark light',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#F1F5F9' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090B' },
+  ],
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${process.env.NEXTAUTH_URL}`),
@@ -13,9 +30,7 @@ export const metadata: Metadata = {
   },
   description:
     'Diễn đàn của web đọc truyện tranh online tiện ích nhất được cập nhật liên tục mỗi ngày - Cùng tham gia thảo luận tại Moetruyen Forum',
-  colorScheme: 'dark light',
-  themeColor: 'dark light',
-  referrer: 'origin-when-cross-origin',
+  referrer: 'strict-origin-when-cross-origin',
   generator: 'Moetruyen Forum',
   authors: [{ name: 'Moetruyen' }],
   keywords: ['Manga', 'Truyện tranh', 'Forum', 'Diễn đàn', 'Moetruyen'],
@@ -48,17 +63,21 @@ const roboto = Roboto({
   adjustFontFallback: true,
 });
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`dark ${roboto.variable} font-sans`}>
-      <body className="antialiased dark:bg-zinc-800 md:scrollbar md:scrollbar--dark">
+    <html
+      lang="vi"
+      translate="no"
+      className={`dark ${roboto.variable} font-sans`}
+    >
+      <body className="h-screen flex flex-col md:flex-row antialiased bg-muted overflow-hidden hide_scrollbar">
         <Providers>
-          <Navbar />
-          {children}
+          <Header />
+          <main className="relative flex-1 flex">{children}</main>
         </Providers>
         <Toaster />
       </body>

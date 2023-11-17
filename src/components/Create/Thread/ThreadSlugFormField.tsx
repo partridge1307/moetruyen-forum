@@ -8,33 +8,16 @@ import {
 import { Input } from '@/components/ui/Input';
 import { CreateThreadPayload, EditThreadPayload } from '@/lib/validators/forum';
 import { FC } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { Control, UseFormReturn } from 'react-hook-form';
 
-type ThreadSlugFormFieldProps =
-  | {
-      type: 'CREATE';
-      form: UseFormReturn<CreateThreadPayload>;
-    }
-  | { type: 'EDIT'; form: UseFormReturn<EditThreadPayload> };
+type ThreadSlugFormFieldProps = {
+  form: UseFormReturn<CreateThreadPayload> | UseFormReturn<EditThreadPayload>;
+};
 
-const ThreadSlugFormField: FC<ThreadSlugFormFieldProps> = ({ type, form }) => {
-  return type === 'CREATE' ? (
+const ThreadSlugFormField: FC<ThreadSlugFormFieldProps> = ({ form }) => {
+  return (
     <FormField
-      control={form.control}
-      name="slug"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Slug</FormLabel>
-          <FormMessage />
-          <FormControl>
-            <Input placeholder="Slug" {...field} />
-          </FormControl>
-        </FormItem>
-      )}
-    />
-  ) : (
-    <FormField
-      control={form.control}
+      control={form.control as Control<CreateThreadPayload | EditThreadPayload>}
       name="slug"
       render={({ field }) => (
         <FormItem>

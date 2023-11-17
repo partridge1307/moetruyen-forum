@@ -6,16 +6,17 @@ import { CreatePostPayload, CreatePostValidator } from '@/lib/validators/forum';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { Post, SubForum } from '@prisma/client';
 import { useRouter } from 'next/navigation';
-import { FC } from 'react';
+import { FC, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import PostTitleFormField from './PostTitleFormField';
 import PostContentFormField from './PostContentFormField';
 import axios, { AxiosError } from 'axios';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/Button';
+import { $getRoot, type LexicalEditor } from 'lexical';
 
 interface EditProps {
-  post: Pick<Post, 'id' | 'content' | 'title' | 'description'> & {
+  post: Pick<Post, 'id' | 'content' | 'title' | 'plainTextContent'> & {
     subForum: Pick<SubForum, 'slug'>;
   };
 }
@@ -24,6 +25,7 @@ const PostEdit: FC<EditProps> = ({ post }) => {
   const router = useRouter();
   const { serverErrorToast, loginToast, notFoundToast, successToast } =
     useCustomToast();
+  const editorRef = useRef<LexicalEditor>(null);
 
   const form = useForm<CreatePostPayload>({
     resolver: zodResolver(CreatePostValidator),
@@ -31,7 +33,7 @@ const PostEdit: FC<EditProps> = ({ post }) => {
       title: post.title,
       // @ts-ignore
       content: post.content,
-      description: post.description,
+      description: post.plainTextContent,
     },
   });
 
@@ -48,7 +50,7 @@ const PostEdit: FC<EditProps> = ({ post }) => {
       return serverErrorToast();
     },
     onSuccess: () => {
-      router.push(`/${post.subForum.slug}/${post.id}`);
+      router.push(`/m/${post.subForum.slug}/${post.id}`);
       router.refresh();
 
       return successToast();
@@ -56,11 +58,15 @@ const PostEdit: FC<EditProps> = ({ post }) => {
   });
 
   function onSubmitHandler(values: CreatePostPayload) {
-    const payload: CreatePostPayload = {
+    let payload: CreatePostPayload = {
       title: values.title,
       content: values.content ?? post.content,
-      description: values.description ?? post.description,
     };
+    const editorState = editorRef.current?.getEditorState();
+    editorState?.read(() => {
+      const textContent = $getRoot().getTextContent();
+      payload.plainTextContent = textContent;
+    });
 
     Update(payload);
   }
@@ -69,7 +75,11 @@ const PostEdit: FC<EditProps> = ({ post }) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmitHandler)} className="space-y-6">
         <PostTitleFormField form={form} />
-        <PostContentFormField form={form} initialContent={post.content} />
+        <PostContentFormField
+          editorRef={editorRef}
+          form={form}
+          initialContent={post.content}
+        />
 
         <div className="flex justify-end items-center gap-8">
           <Button

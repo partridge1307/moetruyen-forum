@@ -4,7 +4,7 @@ import { VoteValidator } from '@/lib/validators/vote';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 
-export async function PATCH(req: Request) {
+export async function POST(req: Request) {
   try {
     const session = await getAuthSession();
     if (!session) return new Response('Unauthorized', { status: 401 });

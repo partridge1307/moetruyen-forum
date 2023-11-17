@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { FC } from 'react';
+import { FC, memo } from 'react';
 
 interface CommentOEmbedProps {
   oEmbed: Prisma.JsonValue;
@@ -22,7 +22,7 @@ const CommentOEmbed: FC<CommentOEmbedProps> = ({ oEmbed }) => {
     <a
       href={link}
       target="_blank"
-      className="flex items-center rounded-lg dark:bg-zinc-900/60"
+      className="flex items-center rounded-lg bg-muted"
     >
       {meta.image.url && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -55,4 +55,4 @@ const CommentOEmbed: FC<CommentOEmbedProps> = ({ oEmbed }) => {
   );
 };
 
-export default CommentOEmbed;
+export default memo(CommentOEmbed);
