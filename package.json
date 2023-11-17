@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "prestart": "prisma generate",
-    "start": "next start -p 4000",
+    "start": "next start -p 3002",
     "lint": "next lint"
   },
   "dependencies": {
