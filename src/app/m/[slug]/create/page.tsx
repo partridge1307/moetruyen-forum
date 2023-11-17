@@ -19,7 +19,7 @@ interface pageProps {
 
 const page: FC<pageProps> = async ({ params }) => {
   const session = await getAuthSession();
-  if (!session) return redirect('/');
+  if (!session) return redirect(`${process.env.NEXT_PUBLIC_MAIN_URL}/sign-in`);
 
   const subForum = await db.subForum.findUnique({
     where: {
