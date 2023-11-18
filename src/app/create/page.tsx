@@ -17,7 +17,7 @@ const page = async () => {
 
   return (
     <>
-      <section className="relative p-3 my-2 w-full lg:w-4/6 max-h-full overflow-y-auto hide_scrollbar">
+      <section className="relative w-full lg:w-4/6 p-3 max-sm:pb-20 bg-primary-foreground">
         <CreateThreadForm />
       </section>
       <Homepage />

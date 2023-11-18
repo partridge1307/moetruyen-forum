@@ -17,7 +17,7 @@ const page = async ({
 
   return (
     <>
-      <section className="relative w-full lg:w-4/6 max-sm:pb-16 bg-primary-foreground">
+      <section className="relative w-full lg:w-4/6 max-sm:pb-20 bg-primary-foreground">
         <div className="sticky top-0 z-50 flex mb-5 border-b-2 border-primary bg-primary-foreground">
           <Link href="/" className="w-full p-5 pb-4 text-center">
             <span

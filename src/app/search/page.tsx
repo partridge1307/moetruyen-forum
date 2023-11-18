@@ -6,7 +6,7 @@ const Homepage = dynamic(() => import('@/components/Sidebar/Homepage'));
 const page = () => {
   return (
     <>
-      <section className="fixed md:relative top-0 lg:top-0 p-2 w-full lg:w-4/6 max-h-[calc(100%-4.25rem)] md:max-h-full bg-primary-foreground overflow-y-auto hide_scrollbar">
+      <section className="relative w-full lg:w-4/6 p-3 max-sm:pb-20 bg-primary-foreground">
         <Search />
       </section>
       <Homepage />

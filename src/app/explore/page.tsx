@@ -43,7 +43,7 @@ const page: FC<pageProps> = async ({ searchParams }) => {
 
   return (
     <>
-      <section className="fixed md:relative top-0 lg:top-0 p-2 w-full lg:w-4/6 max-h-[calc(100%-4.25rem)] md:max-h-full bg-primary-foreground overflow-y-auto hide_scrollbar">
+      <section className="relative w-full lg:w-4/6 p-3 max-sm:pb-20 bg-primary-foreground">
         <h1 className="text-2xl font-semibold">Khám phá</h1>
 
         {!forums.length && <p>Không có kết quả</p>}
