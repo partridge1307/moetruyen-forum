@@ -13,7 +13,7 @@ interface layoutProps {
 const layout: FC<layoutProps> = ({ children, params }) => {
   return (
     <>
-      <section className="fixed md:relative top-12 lg:top-0 w-full lg:w-4/6 p-3 max-h-[calc(100%-7.25rem)] md:max-h-[calc(100%-3rem)] lg:max-h-full bg-primary-foreground overflow-y-auto hide_scrollbar">
+      <section className="relative top-0 w-full lg:w-4/6 max-sm:pt-20 max-sm:pb-20 p-3 bg-primary-foreground">
         {children}
       </section>
       <ThreadWidget slug={params.slug} />

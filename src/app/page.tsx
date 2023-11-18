@@ -17,7 +17,7 @@ const page = async ({
 
   return (
     <>
-      <section className="fixed md:relative top-0 lg:top-0 w-full lg:w-4/6 max-h-[calc(100%-4.25rem)] md:max-h-full bg-primary-foreground overflow-y-auto hide_scrollbar">
+      <section className="relative w-full lg:w-4/6 max-sm:pb-16 bg-primary-foreground">
         <div className="sticky top-0 z-50 flex mb-5 border-b-2 border-primary bg-primary-foreground">
           <Link href="/" className="w-full p-5 pb-4 text-center">
             <span

@@ -9,6 +9,7 @@ import Author from './Author';
 import Content from './Content';
 import Vote from './Vote';
 import { useRouter } from 'next/navigation';
+import ShareButton from '../PostShareButton';
 
 interface PostCardProps {
   post: Posts;
@@ -25,17 +26,25 @@ const PostCard = forwardRef<HTMLLIElement, PostCardProps>(
 
         <div className="mt-3">
           <Content post={post} />
-          <div className="mt-6 flex items-center gap-6">
-            <Vote post={post} session={session} />
-            <div
-              className="flex items-center gap-1.5 hover:cursor-pointer"
-              onClick={() => router.push(`/m/${post.subForum.slug}/${post.id}`)}
-            >
-              <MessageSquare />
-              <span className="text-lg">
-                {nFormatter(post._count.comments, 1)}
-              </span>
+          <div className="mt-6 flex flex-wrap justify-between items-center gap-6">
+            <div className="flex items-center gap-6">
+              <Vote post={post} session={session} />
+              <div
+                className="flex items-center gap-1.5 hover:cursor-pointer"
+                onClick={() =>
+                  router.push(`/m/${post.subForum.slug}/${post.id}`)
+                }
+              >
+                <MessageSquare />
+                <span className="text-lg">
+                  {nFormatter(post._count.comments, 1)}
+                </span>
+              </div>
             </div>
+            <ShareButton
+              title={post.title}
+              url={`/m/${post.subForum.slug}/${post.id}`}
+            />
           </div>
         </div>
       </li>

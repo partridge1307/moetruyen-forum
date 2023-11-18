@@ -13,7 +13,7 @@ const Header = () => {
   const isTablet = useMediaQuery('(min-width: 768px)');
 
   return (
-    <header className="z-[100] sticky bottom-0 md:top-0 w-screen md:w-fit md:h-full py-2 md:p-6 order-last md:order-first border-t-2 md:border-t-0 md:border-r-2 border-primary bg-primary-foreground">
+    <header className="z-[100] fixed bottom-0 md:top-0 w-screen md:w-fit py-2 md:p-6 order-last md:order-first border-t-2 md:border-t-0 md:border-r-2 border-primary bg-primary-foreground">
       <Link
         href="/"
         className="hidden md:flex items-center space-x-2 md:mr-8 px-2"

@@ -78,16 +78,16 @@ const Search: FC<SearchProps> = ({ forumId, className, ...props }) => {
       </div>
 
       {isFocused && !!debouncedValue.length && !!postsResult.length && (
-        <ul className="absolute inset-x-0 top-12 max-h-52 z-10 space-y-2.5 rounded-md text-xl font-semibold overflow-y-auto bg-primary-foreground">
+        <ul className="absolute inset-x-0 top-12 max-h-52 z-10 space-y-2.5 rounded-md text-xl font-semibold overflow-y-auto bg-muted md:scrollbar md:scrollbar--dark">
           {postsResult.map((post) => (
             <Link
               key={post.id}
               href={`/m/${post.slug}/${post.id}`}
-              className="flex flex-col p-2 rounded-md hover:bg-muted"
+              className="flex flex-col p-2 rounded-md transition-colors hover:bg-primary-foreground/40"
             >
               {post.title}
               <Highlighter
-                className="text-base font-normal"
+                className="break-words text-base font-normal"
                 autoEscape
                 searchWords={debouncedValue
                   .replace(tsquerySpecialChars, ' ')

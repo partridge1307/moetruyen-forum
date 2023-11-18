@@ -23,7 +23,7 @@ const Widget: FC<WidgetProps> = ({ forums, users }) => {
 
   return (
     !isMobile && (
-      <aside className="hidden lg:block relative flex-1 p-3 space-y-10 border-l-2 border-primary h-screen max-h-screen overflow-auto hide_scrollbar">
+      <aside className="hidden lg:block sticky top-0 right-0 flex-1 p-3 space-y-10 border-l-2 border-primary h-screen max-h-screen overflow-auto hide_scrollbar">
         <div className="p-3 rounded-md bg-primary-foreground">
           <h1 className="flex items-center gap-2 ml-1 mb-4 text-xl font-semibold">
             <Compass />

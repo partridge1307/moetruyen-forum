@@ -20,7 +20,10 @@ const SubscribeButton = dynamic(
 const Members = dynamic(() => import('./Members'), { ssr: false });
 
 interface ThreadWidgetProps {
-  forum: Pick<SubForum, 'id' | 'slug' | 'banner' | 'title' | 'createdAt'> & {
+  forum: Pick<
+    SubForum,
+    'id' | 'slug' | 'banner' | 'title' | 'canSend' | 'createdAt'
+  > & {
     creator: Pick<User, 'name'>;
     subscriptions: (Pick<Subscription, 'isManager'> & {
       user: Pick<User, 'name' | 'color' | 'image'>;
@@ -38,7 +41,7 @@ const MobileWidget: FC<ThreadWidgetProps> = ({
   isOwner,
 }) => {
   return (
-    <section className="fixed top-0 inset-x-0 left-0 md:left-[240px] p-2 transition-transform">
+    <section className="fixed top-0 inset-x-0 left-0 md:left-60 p-2 transition-transform border-b border-primary bg-primary-foreground">
       <div className="flex justify-between">
         <Link
           href={`/m/${forum.slug}`}
@@ -84,6 +87,16 @@ const MobileWidget: FC<ThreadWidgetProps> = ({
               <dl className="py-2 flex justify-between">
                 <dt>Người tạo</dt>
                 <dd>{forum.creator.name}</dd>
+              </dl>
+              <dl className="py-2 flex justify-between">
+                <dt>Đăng bài</dt>
+                <dd
+                  className={`font-semibold ${
+                    forum.canSend ? 'text-green-400' : 'text-red-500'
+                  }`}
+                >
+                  {forum.canSend ? 'Cho phép' : 'Bị chặn'}
+                </dd>
               </dl>
 
               {!!session && (

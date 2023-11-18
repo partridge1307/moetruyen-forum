@@ -18,7 +18,7 @@ const PostInput = ({ slug }: { slug: string }) => {
 
         router.push(`/m/${slug}/create`);
       }}
-      className="p-3 mb-8 flex items-center space-x-2.5 hover:cursor-pointer"
+      className="mb-6 flex items-center space-x-2.5 hover:cursor-pointer"
     >
       <UserAvatar user={session?.user} />
       <div className="relative p-2 pl-4 w-full h-10 hover:cursor-pointer rounded-full bg-muted">

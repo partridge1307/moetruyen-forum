@@ -19,6 +19,7 @@ const Thread: FC<indexProps> = async ({ slug }) => {
         slug: true,
         banner: true,
         title: true,
+        canSend: true,
         createdAt: true,
         creator: {
           select: {

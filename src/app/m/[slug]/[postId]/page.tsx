@@ -1,5 +1,6 @@
 import Author from '@/components/Feed/Author';
 import Vote from '@/components/Feed/Vote';
+import ShareButton from '@/components/PostShareButton';
 import CommentSkeleton from '@/components/Skeleton/CommentsSkeleton';
 import { buttonVariants } from '@/components/ui/Button';
 import { getAuthSession } from '@/lib/auth';
@@ -98,18 +99,25 @@ const page: FC<pageProps> = async ({ params }) => {
         <div className="py-3 flex items-center justify-between border-t-2 border-primary">
           <Vote post={post} session={session} />
           <div className="flex items-center gap-2">
+            <ShareButton
+              title={post.title}
+              url={`/m/${post.subForum.slug}/${post.id}`}
+            />
+
             {!!session && <DeletePost session={session} post={post} />}
 
-            <Link
-              href={`/m/${post.subForum.slug}/edit/${post.id}`}
-              className={buttonVariants({
-                variant: 'ghost',
-                className: 'gap-1.5',
-              })}
-            >
-              <Pen />
-              Chỉnh sửa
-            </Link>
+            {!!session && session.user.id === post.authorId && (
+              <Link
+                href={`/m/${post.subForum.slug}/edit/${post.id}`}
+                className={buttonVariants({
+                  variant: 'ghost',
+                  className: 'gap-1.5',
+                })}
+              >
+                <Pen />
+                Chỉnh sửa
+              </Link>
+            )}
           </div>
         </div>
       </div>

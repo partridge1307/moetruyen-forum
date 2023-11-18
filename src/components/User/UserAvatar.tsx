@@ -16,7 +16,7 @@ const UserAvatar: FC<UserAvatarProps> = ({ user, ...props }) => {
         <div className="relative aspect-square">
           <Image
             fill
-            sizes="(max-width: 640px) 20vw, 30vw"
+            sizes="(max-width: 640px) 20vw, 25vw"
             quality={40}
             src={user.image}
             alt={`${user.name} Avatar`}

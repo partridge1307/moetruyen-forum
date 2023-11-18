@@ -1,10 +1,10 @@
 import PostCreateSkeleton from '@/components/Skeleton/PostCreateSkeleton';
 import { getAuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import { notFound, redirect } from 'next/navigation';
 import { FC } from 'react';
-import type { Metadata } from 'next';
 
 const CreatePostForm = dynamic(() => import('@/components/Create/Post'), {
   ssr: false,

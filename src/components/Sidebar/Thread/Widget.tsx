@@ -29,7 +29,10 @@ const Members = dynamic(() => import('./Members'), {
 });
 
 interface WidgetProps {
-  forum: Pick<SubForum, 'id' | 'slug' | 'banner' | 'title' | 'createdAt'> & {
+  forum: Pick<
+    SubForum,
+    'id' | 'slug' | 'banner' | 'title' | 'canSend' | 'createdAt'
+  > & {
     creator: Pick<User, 'name'>;
     subscriptions: (Pick<Subscription, 'isManager'> & {
       user: Pick<User, 'name' | 'color' | 'image'>;
@@ -44,7 +47,7 @@ const Widget: FC<WidgetProps> = ({ forum, session, isSubscribed, isOwner }) => {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   return isDesktop ? (
-    <section className="relative flex-1 p-2 max-h-full overflow-auto border-l-2 border-l-primary hide_scrollbar">
+    <section className="block sticky top-0 right-0 flex-1 p-3 space-y-10 border-l-2 h-screen max-h-screen overflow-auto border-primary bg-primary-foreground hide_scrollbar">
       <Search forumId={forum.id} />
       <ForumImage forum={forum} className="rounded-md object-cover" />
       <div className="mt-2 divide-y divide-primary">
@@ -71,6 +74,17 @@ const Widget: FC<WidgetProps> = ({ forum, session, isSubscribed, isOwner }) => {
         <dl className="py-2 flex justify-between">
           <dt>Người tạo</dt>
           <dd>{forum.creator.name}</dd>
+        </dl>
+
+        <dl className="py-2 flex justify-between">
+          <dt>Đăng bài</dt>
+          <dd
+            className={`font-semibold ${
+              forum.canSend ? 'text-green-400' : 'text-red-500'
+            }`}
+          >
+            {forum.canSend ? 'Cho phép' : 'Bị chặn'}
+          </dd>
         </dl>
 
         {!!session && (

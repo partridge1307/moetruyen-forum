@@ -74,10 +74,10 @@ export default function RootLayout({
       translate="no"
       className={`dark ${roboto.variable} font-sans`}
     >
-      <body className="h-screen flex flex-col md:flex-row antialiased bg-muted overflow-hidden hide_scrollbar">
+      <body className="flex flex-col md:flex-row antialiased bg-muted hide_scrollbar">
         <Providers>
           <Header />
-          <main className="relative flex-1 flex">{children}</main>
+          <main className="relative flex-1 flex md:pl-56">{children}</main>
         </Providers>
         <Toaster />
       </body>
