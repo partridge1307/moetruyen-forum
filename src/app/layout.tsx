@@ -77,7 +77,7 @@ export default function RootLayout({
       <body className="flex flex-col md:flex-row antialiased bg-muted hide_scrollbar">
         <Providers>
           <Header />
-          <main className="relative flex-1 flex md:pl-56">{children}</main>
+          <main className="relative flex-1 flex md:pl60">{children}</main>
         </Providers>
         <Toaster />
       </body>
