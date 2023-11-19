@@ -96,7 +96,7 @@ const page: FC<pageProps> = async ({ params }) => {
           <MTOutput id={post.id} content={post.content} />
         </div>
 
-        <div className="py-3 flex items-center justify-between border-t-2 border-primary">
+        <div className="py-3 flex flex-wrap items-center justify-between border-t-2 border-primary">
           <Vote post={post} session={session} />
           <div className="flex items-center gap-2">
             <ShareButton
