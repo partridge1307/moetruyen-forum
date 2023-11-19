@@ -43,15 +43,15 @@ export async function POST(req: Request) {
     const createdAt = user.createdAt;
     createdAt.setDate(createdAt.getDate() + 7);
 
-    // if (
-    //   createdAt.getTime() >= new Date().getTime() ||
-    //   !user.verified ||
-    //   user._count.manga < 3
-    // ) {
-    //   return new Response('Not enough condition', {
-    //     status: 409,
-    //   });
-    // }
+    if (
+      createdAt.getTime() >= new Date().getTime() ||
+      !user.verified ||
+      user._count.manga < 3
+    ) {
+      return new Response('Not enough condition', {
+        status: 409,
+      });
+    }
 
     const createdSubForum = await db.subForum.create({
       data: {
