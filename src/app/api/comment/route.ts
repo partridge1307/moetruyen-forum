@@ -41,7 +41,8 @@ export async function POST(req: Request) {
             replyToId: targetComment.id,
             postId: targetComment.postId,
             creatorId: session.user.id,
-            content: { ...content },
+            // @ts-ignore
+            content,
             oEmbed,
           },
         }),
@@ -63,7 +64,8 @@ export async function POST(req: Request) {
         data: {
           postId: id,
           creatorId: session.user.id,
-          content: { ...content },
+          // @ts-ignore
+          content,
           oEmbed,
         },
       });

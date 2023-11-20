@@ -1,10 +1,6 @@
 import { getAuthSession } from '@/lib/auth';
-import { DeleteSubForumImage, UploadForumImage } from '@/lib/contabo';
 import { db } from '@/lib/db';
-import {
-  CreatePostValidator,
-  EditThreadFormValidator,
-} from '@/lib/validators/forum';
+import { CreatePostValidator } from '@/lib/validators/forum';
 import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 
@@ -44,7 +40,8 @@ export async function POST(req: Request, context: { params: { id: string } }) {
           subForumId: +context.params.id,
           authorId: session.user.id,
           title,
-          content: { ...content },
+          // @ts-ignore
+          content,
           plainTextContent: !!plainTextContent?.length
             ? plainTextContent
             : `Bài viết ${title}. Tác giả ${session.user.name}`,
@@ -80,7 +77,8 @@ export async function PATCH(req: Request, context: { params: { id: string } }) {
       },
       data: {
         title,
-        content: { ...content },
+        // @ts-ignore
+        content,
         plainTextContent: !!plainTextContent?.length
           ? plainTextContent
           : `Bài viết ${title}. Tác giả ${session.user.name}`,
