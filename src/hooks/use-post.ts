@@ -39,7 +39,7 @@ export const usePosts = <TData>({
       }
 
       const { data } = await axios.get(query);
-      return data as { posts: TData[]; lastCursor: number };
+      return data as { posts: TData[]; lastCursor?: number };
     },
     {
       getNextPageParam: (lastPage) => {
