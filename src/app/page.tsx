@@ -43,7 +43,7 @@ const page = async ({
           </Link>
         </div>
 
-        <div className="p-3">
+        <div className="p-6">
           {!posts?.length ? (
             <p className="text-3xl font-semibold">Không có kết quả</p>
           ) : (
